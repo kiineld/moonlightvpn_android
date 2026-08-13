@@ -1,0 +1,80 @@
+name: Release
+
+# Tag a version to publish: `git tag v1.2.3 && git push origin v1.2.3`.
+# Produces a universal APK plus per-ABI splits, at stable asset names so
+# releases/latest/download/<name> keeps working.
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Install the NDK
+        # Pinned: scripts/build-tun2socks.sh compiles against this exact version,
+        # and ndk-build was removed after NDK 27.
+        run: |
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --install "ndk;27.3.13750724"
+
+      - name: Fetch native artifacts and geodata
+        # libXray AAR, geoip/geosite, and the two fonts. None are committed.
+        run: ./scripts/fetch-native.sh
+
+      - name: Build tun2socks
+        # From source, because the published Android binaries are the standalone
+        # executable and cannot accept a VpnService file descriptor.
+        run: ./scripts/build-tun2socks.sh
+
+      - name: Run the tests before shipping anything
+        run: ./gradlew testDebugUnitTest lintDebug
+
+      - name: Build signed release APKs
+        env:
+          # Set these repository secrets to sign with a private key. Without
+          # them the build falls back to the committed CI key — see the README.
+          MOONLIGHT_KEYSTORE_PASSWORD: ${{ secrets.MOONLIGHT_KEYSTORE_PASSWORD }}
+          MOONLIGHT_KEY_ALIAS: ${{ secrets.MOONLIGHT_KEY_ALIAS }}
+          MOONLIGHT_KEY_PASSWORD: ${{ secrets.MOONLIGHT_KEY_PASSWORD }}
+        run: |
+          if [ -n "${{ secrets.MOONLIGHT_KEYSTORE_BASE64 }}" ]; then
+            echo "${{ secrets.MOONLIGHT_KEYSTORE_BASE64 }}" | base64 -d > "$RUNNER_TEMP/release.keystore"
+            echo "MOONLIGHT_KEYSTORE=$RUNNER_TEMP/release.keystore" >> "$GITHUB_ENV"
+          fi
+          ./gradlew assembleRelease -PuniversalApk
+
+      - name: Name the artifacts for a stable download URL
+        run: |
+          mkdir -p artifacts
+          out=app/build/outputs/apk/release
+          cp "$out/app-universal-release.apk"    artifacts/moonlight-android-universal.apk
+          cp "$out/app-arm64-v8a-release.apk"    artifacts/moonlight-android-arm64-v8a.apk
+          cp "$out/app-armeabi-v7a-release.apk"  artifacts/moonlight-android-armeabi-v7a.apk
+          cp "$out/app-x86_64-release.apk"       artifacts/moonlight-android-x86_64.apk
+          ls -lh artifacts
+
+      - name: Publish the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          gh release create "$TAG" \
+            --title "Moonlight $TAG" \
+            --generate-notes \
+            --notes "Install \`moonlight-android-universal.apk\` if unsure — it runs on every ABI. The per-ABI builds are roughly a third of the size." \
+            artifacts/*.apk \
+          || gh release upload "$TAG" artifacts/*.apk --clobber

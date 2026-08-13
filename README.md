@@ -4,6 +4,43 @@ A Kotlin/Jetpack Compose VPN client built on **Xray-core 26.7.28**, implementing
 the `Moonlight Client` design. Subscriptions come from a Remnawave panel and are
 imported by QR code, clipboard, manual URL, or a Telegram bot link.
 
+## Downloads
+
+Latest release, always at the same URL:
+
+```
+https://github.com/kiineld/moonlightvpn_android/releases/latest/download/moonlight-android-universal.apk
+```
+
+Per-ABI builds are about a third of the size — `moonlight-android-arm64-v8a.apk`
+covers essentially every phone from 2016 on.
+
+Releases are cut by tagging: `git tag v1.2.3 && git push origin v1.2.3`. The
+workflow in `.github/workflows/release.yml` fetches the native artifacts, builds
+tun2socks from source, runs the tests, and publishes signed APKs.
+
+### Signing
+
+Release builds are signed so updates install over each other. By default they use
+`ci/moonlight-ci.keystore`, which is **committed and therefore public** — it
+gives a stable signature but anyone can produce an APK that updates this app.
+
+To sign with a private key, add four repository secrets and the workflow uses
+them instead:
+
+```bash
+keytool -genkeypair -v -keystore release.keystore -alias moonlight \
+  -keyalg RSA -keysize 4096 -validity 10950
+
+gh secret set MOONLIGHT_KEYSTORE_BASE64 < <(base64 -i release.keystore)
+gh secret set MOONLIGHT_KEYSTORE_PASSWORD
+gh secret set MOONLIGHT_KEY_ALIAS
+gh secret set MOONLIGHT_KEY_PASSWORD
+```
+
+Switching keys means existing installs must be uninstalled before updating, so
+do it before the app has users if you intend to.
+
 ## Getting a build
 
 The native artifacts are large and are not committed. Fetch and build them once:

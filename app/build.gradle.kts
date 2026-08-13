@@ -48,8 +48,34 @@ android {
         localeFilters += listOf("en", "ru")
     }
 
+    signingConfigs {
+        create("release") {
+            // Preferred: a real key supplied by CI secrets.
+            val storeFromEnv = System.getenv("MOONLIGHT_KEYSTORE")
+            val fallback = rootProject.file("ci/moonlight-ci.keystore")
+
+            if (storeFromEnv != null && file(storeFromEnv).exists()) {
+                storeFile = file(storeFromEnv)
+                storePassword = System.getenv("MOONLIGHT_KEYSTORE_PASSWORD")
+                keyAlias = System.getenv("MOONLIGHT_KEY_ALIAS")
+                keyPassword = System.getenv("MOONLIGHT_KEY_PASSWORD")
+            } else if (fallback.exists()) {
+                // Fallback so a release can be built without any secret
+                // configured. This key is committed, so treat it as public: it
+                // gives a stable signature (updates install over each other) but
+                // anyone can produce an APK that updates this app. Set the
+                // MOONLIGHT_KEYSTORE secrets to replace it — see the README.
+                storeFile = fallback
+                storePassword = "moonlight"
+                keyAlias = "moonlight"
+                keyPassword = "moonlight"
+            }
+        }
+    }
+
     buildTypes {
         release {
+            signingConfig = signingConfigs.getByName("release")
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
