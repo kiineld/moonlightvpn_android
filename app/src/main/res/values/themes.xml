@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- AppCompat is the base because AppCompatDelegate.setApplicationLocales
+         (the per-app locale backport) requires an AppCompat activity. Everything
+         visible is drawn by Compose; this theme only sets the window. -->
+    <style name="Theme.Moonlight" parent="Theme.AppCompat.DayNight.NoActionBar">
+        <item name="android:windowBackground">@color/ml_window_background</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:windowLightStatusBar">false</item>
+    </style>
+</resources>

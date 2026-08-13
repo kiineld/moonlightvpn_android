@@ -1,0 +1,17 @@
+*.iml
+.gradle/
+build/
+local.properties
+.idea/
+.DS_Store
+captures/
+.externalNativeBuild/
+.cxx/
+
+# Fetched by scripts/fetch-native.sh — not committed (large prebuilt binaries)
+.native-cache/
+vpn/libs/*.aar
+vpn/src/main/jniLibs/
+design/src/main/res/font/*.ttf
+vpn/src/main/assets/geo/*.dat
+dist/

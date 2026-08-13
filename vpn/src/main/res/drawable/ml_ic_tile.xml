@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Quick-settings tile icon. Same crescent as the launcher and notification, but
+     scaled to fill the canvas: the notification glyph sits in a 44-unit viewport
+     and covers only ~17 of it, which a tile renders as a very small mark. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="44"
+    android:viewportHeight="44"
+    android:tint="#FFFFFF">
+    <group
+        android:scaleX="2.2"
+        android:scaleY="2.2"
+        android:translateX="-25.52"
+        android:translateY="-26.4">
+        <path
+            android:fillColor="#FFFFFF"
+            android:pathData="M30,22a8.4,8.4 0 1 1-9.4,-8.34A10,10 0 0 0 30,22Z" />
+    </group>
+</vector>

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The Moonlight crescent, matching assets/logo-tile.svg. Status-bar icons are
+     drawn as a monochrome mask, so this is a single white path. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="44"
+    android:viewportHeight="44"
+    android:tint="#FFFFFF">
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M30,22a8.4,8.4 0 1 1-9.4,-8.34A10,10 0 0 0 30,22Z" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M28.8,12.5a1.7,1.7 0 1 0 3.4,0a1.7,1.7 0 1 0 -3.4,0z" />
+</vector>

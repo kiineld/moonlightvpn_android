@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Adaptive-icon foreground. The crescent from assets/logo-tile.svg, scaled into
+     the inner 72x72dp safe zone of the 108x108dp canvas. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <group android:scaleX="1.35" android:scaleY="1.35" android:translateX="24.3" android:translateY="24.3">
+        <path
+            android:fillColor="#101828"
+            android:pathData="M30,22a8.4,8.4 0 1 1-9.4,-8.34A10,10 0 0 0 30,22Z" />
+        <path
+            android:fillColor="#101828"
+            android:pathData="M28.8,12.5a1.7,1.7 0 1 0 3.4,0a1.7,1.7 0 1 0 -3.4,0z" />
+        <path
+            android:fillColor="#101828"
+            android:pathData="M23.9,8a1.1,1.1 0 1 0 2.2,0a1.1,1.1 0 1 0 -2.2,0z" />
+    </group>
+</vector>

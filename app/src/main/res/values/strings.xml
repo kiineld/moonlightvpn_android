@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Brand name: identical in every locale. -->
+    <string name="app_name" translatable="false">Moonlight</string>
+
+    <!-- Onboarding -->
+    <string name="onboarding_title">Internet\nwithout borders</string>
+    <string name="onboarding_subtitle">One tap to connect. A subscription from the bot or your account works here with no setup.</string>
+    <string name="onboarding_feature_tap_title">One tap</string>
+    <string name="onboarding_feature_tap_sub">Picks the nearest node for you</string>
+    <string name="onboarding_feature_devices_title">Up to 5 devices</string>
+    <string name="onboarding_feature_devices_sub">One subscription for phone, tablet and laptop</string>
+    <string name="onboarding_feature_reality_title">VLESS Reality</string>
+    <string name="onboarding_feature_reality_sub">Keys never leave your device</string>
+    <string name="onboarding_add_subscription">Add subscription</string>
+    <string name="onboarding_later">Later</string>
+
+    <!-- Import -->
+    <string name="import_title">Subscription</string>
+    <string name="import_hint">Scan the QR code from the bot or your account — or paste a subscription link.</string>
+    <string name="import_camera_hint">point the camera at the QR code</string>
+    <string name="import_camera_permission">Allow camera access to scan a QR code</string>
+    <string name="import_grant_camera">Allow camera</string>
+    <string name="import_paste">Paste from clipboard</string>
+    <string name="import_or_manually">OR MANUALLY</string>
+    <string name="import_url_placeholder">https://sub.moonlight.vpn/…</string>
+    <string name="import_add">Add</string>
+    <string name="import_telegram_title">Open the Telegram bot</string>
+    <string name="import_telegram_sub">The link arrives in chat and adds itself</string>
+    <string name="import_success_title">Subscription added:</string>
+    <string name="import_success_connect">Connect</string>
+    <string name="import_servers_count">%1$d servers</string>
+    <string name="import_error_clipboard">No subscription link on the clipboard</string>
+    <string name="import_error_invalid">That does not look like a subscription link</string>
+    <string name="import_error_network">Could not reach the server. Check your connection.</string>
+    <string name="import_error_not_found">Subscription not found. Check the link.</string>
+    <string name="import_error_unauthorized">This subscription is not active</string>
+    <string name="import_error_device_limit">Device limit reached for this subscription</string>
+    <string name="import_error_no_nodes">The subscription contains no servers</string>
+
+    <!-- Connect -->
+    <string name="connect_refresh">Refresh</string>
+    <string name="connect_refresh_subscription">Update</string>
+    <string name="connect_refreshing">Refreshing</string>
+    <string name="connect_status_protected">Protected</string>
+    <string name="connect_status_disconnected">Not protected</string>
+    <string name="connect_status_connecting">Connecting</string>
+    <string name="connect_status_reconnecting">Reconnecting</string>
+    <string name="connect_status_error">Error</string>
+    <string name="connect_big_connected">Connected</string>
+    <string name="connect_big_connect">Disconnected</string>
+    <string name="connect_big_connecting">Connecting</string>
+    <string name="connect_hint_tap_disconnect">tap to disconnect</string>
+    <string name="connect_hint_tap_connect">tap to connect</string>
+    <string name="connect_hint_connecting">bringing the tunnel up…</string>
+    <string name="connect_stat_session">SESSION</string>
+    <string name="connect_stat_remaining">REMAINING</string>
+    <string name="connect_auto">Auto</string>
+    <string name="connect_ping">Ping</string>
+    <string name="connect_pinging">Measuring…</string>
+    <string name="connect_auto_prefix">Auto · %1$s</string>
+    <string name="connect_no_subscription">No subscription yet</string>
+    <string name="connect_no_subscription_sub">Add one to get started</string>
+    <string name="connect_measuring">measuring…</string>
+    <string name="connect_latency_ms">%1$d ms</string>
+
+    <!-- Connection errors -->
+    <string name="error_no_subscription">Add a subscription first</string>
+    <string name="error_no_nodes">This subscription has no servers</string>
+    <string name="error_permission_denied">VPN permission was not granted</string>
+    <string name="error_subscription_expired">Your subscription has expired</string>
+    <string name="error_traffic_exhausted">You have used all your traffic</string>
+    <string name="error_device_limit">Device limit reached</string>
+    <string name="error_core_start_failed">The proxy core could not start</string>
+    <string name="error_tunnel_start_failed">The tunnel could not start</string>
+    <string name="error_network">Network unavailable</string>
+    <string name="error_unknown">Something went wrong</string>
+
+    <!-- Subscription -->
+    <string name="subscription_title">Subscription</string>
+    <string name="subscription_plan">Plan</string>
+    <string name="subscription_plan_fallback">Moonlight</string>
+    <string name="subscription_active">Active</string>
+    <string name="subscription_expired">Expired</string>
+    <string name="subscription_label_remaining">REMAINING</string>
+    <string name="subscription_label_traffic">TRAFFIC</string>
+    <string name="subscription_label_devices">DEVICES</string>
+    <string name="subscription_traffic_of">%1$s of %2$s</string>
+    <string name="subscription_traffic_unlimited">Unlimited</string>
+    <string name="subscription_valid_until">valid until %1$s</string>
+    <string name="subscription_link">SUBSCRIPTION LINK</string>
+    <string name="subscription_copied">Link copied</string>
+    <string name="subscription_refresh">Refresh subscription</string>
+    <string name="subscription_refresh_sub">Check servers, days and traffic</string>
+    <string name="subscription_refresh_running">Syncing with the server…</string>
+    <string name="subscription_refresh_done">Updated just now</string>
+    <string name="subscription_refresh_failed">Could not refresh</string>
+    <string name="subscription_extend">Extend subscription</string>
+    <string name="subscription_extend_sub">Pay in the bot or your account</string>
+    <string name="subscription_add">Add subscription</string>
+    <string name="subscription_add_sub">QR code or link</string>
+    <string name="subscription_empty_title">No subscription</string>
+    <string name="subscription_empty_sub">Add one from the bot or your account</string>
+    <string name="subscription_unknown">—</string>
+    <!-- Shown where the panel reports no cap (total=0 / expire=0), as opposed to
+         reporting nothing at all, which stays an em dash. -->
+    <string name="subscription_unlimited_short" translatable="false">∞</string>
+
+    <string name="subscription_delete">Delete subscription</string>
+    <string name="subscription_delete_sub">Removes servers and keys from this device</string>
+    <string name="subscription_delete_confirm">Delete subscription?</string>
+    <string name="subscription_delete_confirm_body">The tunnel will disconnect and the server list will be removed from this device. Your subscription itself is not cancelled — you can add it again with the same link.</string>
+    <string name="action_cancel">Cancel</string>
+    <string name="action_delete">Delete</string>
+
+    <!-- Settings -->
+    <string name="settings_title">Settings</string>
+    <string name="settings_section_connection">CONNECTION</string>
+    <string name="settings_split">Split tunnelling</string>
+    <string name="settings_section_app">APP</string>
+    <string name="settings_theme">Theme</string>
+    <string name="settings_theme_dark">Dark</string>
+    <string name="settings_theme_light">Light</string>
+    <string name="settings_language">Language</string>
+    <string name="settings_notifications">Notifications</string>
+    <string name="settings_notifications_sub">When the subscription or traffic runs out</string>
+    <string name="settings_section_support">SUPPORT</string>
+    <string name="settings_channel">Our channel</string>
+    <string name="settings_channel_sub">News and updates</string>
+    <string name="settings_support">Support</string>
+    <string name="settings_support_sub">We are here 24/7</string>
+    <string name="settings_about">About</string>
+    <string name="settings_about_sub">Version %1$s · show the welcome screen</string>
+    <string name="settings_core_version">Xray-core %1$s</string>
+
+    <!-- Split tunnelling -->
+    <string name="split_title">Apps</string>
+    <string name="split_mode_all">All traffic</string>
+    <string name="split_mode_only">Only these</string>
+    <string name="split_mode_except">Except these</string>
+    <string name="split_hint_all">All device traffic goes through the tunnel.</string>
+    <string name="split_hint_only">Only the selected apps go through the tunnel — everything else goes direct.</string>
+    <string name="split_hint_except">The selected apps go direct; all other traffic goes through the tunnel.</string>
+    <string name="split_summary_all">All traffic</string>
+    <string name="split_loading">Loading apps…</string>
+
+    <string name="logs_title">Logs</string>
+    <string name="logs_subtitle">Diagnostics to send to support</string>
+    <string name="logs_hint">App and Xray-core logs. Subscription links, keys and UUIDs are removed before sharing.</string>
+    <string name="logs_verbose">Verbose core log</string>
+    <string name="logs_verbose_sub">Debug level — also records connection destinations</string>
+    <string name="logs_share">Share logs</string>
+    <string name="logs_empty">Nothing logged yet</string>
+
+    <string name="logs_source_app">App</string>
+    <string name="logs_source_core">Xray-core</string>
+    <string name="logs_empty_core">The core has not logged anything yet.\nConnect once, then come back.</string>
+
+    <string name="split_search_hint">Search apps</string>
+    <string name="split_no_matches">Nothing matches “%1$s”</string>
+
+    <!-- Navigation -->
+    <string name="nav_connect">Connect</string>
+    <string name="nav_subscription">Subscription</string>
+    <string name="nav_settings">Settings</string>
+    <string name="action_back">Back</string>
+
+    <plurals name="days_remaining">
+        <item quantity="one">%1$d day</item>
+        <item quantity="other">%1$d days</item>
+    </plurals>
+    <plurals name="alert_expiring">
+        <item quantity="one">Your subscription ends in %1$d day.</item>
+        <item quantity="other">Your subscription ends in %1$d days.</item>
+    </plurals>
+    <plurals name="apps_selected">
+        <item quantity="one">%1$d app</item>
+        <item quantity="other">%1$d apps</item>
+    </plurals>
+    <string name="split_summary_format">%1$s · %2$s</string>
+
+    <string name="alert_channel_name">Subscription alerts</string>
+    <string name="alert_channel_description">Warns before your subscription or traffic runs out</string>
+    <string name="alert_expired">Your subscription has expired. Renew it to keep connecting.</string>
+    <string name="alert_traffic_low">You have used over 90% of your traffic.</string>
+
+    <string name="unit_bytes">B</string>
+    <string name="unit_kilobytes">KB</string>
+    <string name="unit_megabytes">MB</string>
+    <string name="unit_gigabytes">GB</string>
+    <string name="unit_terabytes">TB</string>
+</resources>

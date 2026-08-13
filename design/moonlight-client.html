@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics>
+<link rel="stylesheet" href="_ds/moonlight-design-system-2eba8cc1-61d8-4622-9adb-87b5f9c53b63/tokens/fonts.css">
+<link rel="stylesheet" href="_ds/moonlight-design-system-2eba8cc1-61d8-4622-9adb-87b5f9c53b63/tokens/colors.css">
+<link rel="stylesheet" href="_ds/moonlight-design-system-2eba8cc1-61d8-4622-9adb-87b5f9c53b63/tokens/typography.css">
+<link rel="stylesheet" href="_ds/moonlight-design-system-2eba8cc1-61d8-4622-9adb-87b5f9c53b63/tokens/spacing.css">
+<link rel="stylesheet" href="_ds/moonlight-design-system-2eba8cc1-61d8-4622-9adb-87b5f9c53b63/tokens/radii.css">
+<link rel="stylesheet" href="_ds/moonlight-design-system-2eba8cc1-61d8-4622-9adb-87b5f9c53b63/tokens/effects.css">
+<link rel="stylesheet" href="_ds/moonlight-design-system-2eba8cc1-61d8-4622-9adb-87b5f9c53b63/tokens/motion.css">
+<link rel="stylesheet" href="_ds/moonlight-design-system-2eba8cc1-61d8-4622-9adb-87b5f9c53b63/base.css">
+<link rel="stylesheet" href="_ds/moonlight-design-system-2eba8cc1-61d8-4622-9adb-87b5f9c53b63/patterns.css">
+<script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.js"></script>
+<script src="_ds/moonlight-design-system-2eba8cc1-61d8-4622-9adb-87b5f9c53b63/_ds_bundle.js"></script>
+<style>
+body{margin:0;background:#0B111E;font-family:var(--ml-font),system-ui,sans-serif;display:grid;place-items:center;min-height:100vh}
+a{color:var(--ml-accent-ink);text-decoration:none}
+a:hover{color:var(--ml-text-link-hover)}
+@keyframes ml-rise{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+@keyframes ml-fade{from{opacity:0}to{opacity:1}}
+@keyframes ml-pop{0%{opacity:0;transform:scale(.72)}62%{transform:scale(1.06)}100%{opacity:1;transform:scale(1)}}
+@keyframes ml-spin{to{transform:rotate(360deg)}}
+@keyframes ml-blink{0%,100%{opacity:1}50%{opacity:.35}}
+@keyframes ml-scan{0%{transform:translateY(6px)}100%{transform:translateY(200px)}}
+@keyframes ml-breathe{0%,100%{transform:scale(1);opacity:.32}50%{transform:scale(1.06);opacity:.06}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important}}
+</style>
+</helmet>
+
+<x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" dark="{{ isDark }}" hint-size="402px,874px">
+<div data-theme="{{ theme }}" style="position:relative;display:flex;flex-direction:column;height:100%;background:var(--ml-bg);color:var(--ml-text);font-family:var(--ml-font);overflow:hidden">
+
+<sc-if value="{{ isOnboard }}" hint-placeholder-val="{{ false }}">
+<div data-screen-label="Онбординг" style="display:flex;flex-direction:column;height:100%;padding:110px 24px 32px;animation:ml-fade .35s var(--ml-ease) both">
+<img src="assets/logo-tile.svg" alt="" width="64" height="64" style="border-radius:20px;display:block;animation:ml-pop .5s var(--ml-ease-slide) both">
+<h1 style="font-family:var(--ml-font-display);font-weight:800;font-size:30px;letter-spacing:-.035em;line-height:1.12;margin:26px 0 10px;animation:ml-rise .5s var(--ml-ease) .06s both">Интернет<br>без границ</h1>
+<p style="font-size:15px;line-height:1.5;color:var(--ml-text-2);margin:0 0 30px;max-width:300px;text-wrap:pretty;animation:ml-rise .5s var(--ml-ease) .11s both">Подключение в одно касание. Подписка из бота или личного кабинета работает здесь без настроек.</p>
+<div style="display:flex;flex-direction:column;gap:14px">
+<div style="display:flex;align-items:center;gap:14px;animation:ml-rise .5s var(--ml-ease) .16s both">
+<span style="width:44px;height:44px;border-radius:14px;background:var(--ml-cat-1);color:var(--ml-text-on-accent);display:grid;place-items:center;flex-shrink:0">
+<x-import component-from-global-scope="Icon" name="Zap" size="20" hint-size="20px,20px"></x-import></span>
+<span><span style="display:block;font-size:15px;font-weight:800">Одно касание</span><span style="display:block;font-size:12.5px;color:var(--ml-text-muted);margin-top:2px">Автовыбор ближайшего узла</span></span>
+</div>
+<div style="display:flex;align-items:center;gap:14px;animation:ml-rise .5s var(--ml-ease) .21s both">
+<span style="width:44px;height:44px;border-radius:14px;background:var(--ml-cat-2);color:var(--ml-text-on-accent);display:grid;place-items:center;flex-shrink:0">
+<x-import component-from-global-scope="Icon" name="Smartphone" size="20" hint-size="20px,20px"></x-import></span>
+<span><span style="display:block;font-size:15px;font-weight:800">До 5 устройств</span><span style="display:block;font-size:12.5px;color:var(--ml-text-muted);margin-top:2px">Одна подписка на телефон, планшет и ноутбук</span></span>
+</div>
+<div style="display:flex;align-items:center;gap:14px;animation:ml-rise .5s var(--ml-ease) .26s both">
+<span style="width:44px;height:44px;border-radius:14px;background:var(--ml-cat-3);color:var(--ml-text-on-accent);display:grid;place-items:center;flex-shrink:0">
+<x-import component-from-global-scope="Icon" name="Lock" size="20" hint-size="20px,20px"></x-import></span>
+<span><span style="display:block;font-size:15px;font-weight:800">VLESS Reality</span><span style="display:block;font-size:12.5px;color:var(--ml-text-muted);margin-top:2px">Ключи хранятся только на устройстве</span></span>
+</div>
+</div>
+<span style="flex:1"></span>
+<button type="button" onClick="{{ goImport }}" style="height:52px;width:100%;border:none;border-radius:999px;background:var(--ml-accent);color:var(--ml-text-on-accent);font-family:var(--ml-font);font-size:15px;font-weight:800;cursor:pointer;transition:transform .18s var(--ml-ease);animation:ml-rise .5s var(--ml-ease) .31s both" style-active="transform:scale(.97)">Добавить подписку</button>
+<button type="button" onClick="{{ goConnect }}" style="height:48px;width:100%;margin-top:10px;border:none;border-radius:999px;background:none;color:var(--ml-text-muted);font-family:var(--ml-font);font-size:14px;font-weight:700;cursor:pointer">Позже</button>
+</div>
+</sc-if>
+
+<sc-if value="{{ isImport }}" hint-placeholder-val="{{ false }}">
+<div data-screen-label="Импорт подписки" style="display:flex;flex-direction:column;height:100%;padding-top:54px;animation:ml-fade .35s var(--ml-ease) both">
+<div style="display:flex;align-items:center;gap:12px;padding:8px 16px 6px;height:56px;flex-shrink:0">
+<button type="button" onClick="{{ goSub }}" style="width:38px;height:38px;border:none;border-radius:999px;background:var(--ml-surface-2);color:var(--ml-text-2);display:grid;place-items:center;cursor:pointer;transition:transform .18s var(--ml-ease)" style-active="transform:scale(.92)">
+<x-import component-from-global-scope="Icon" name="ChevronLeft" size="20" stroke-width="2.2" hint-size="20px,20px"></x-import></button>
+<span style="font-family:var(--ml-font-display);font-weight:800;font-size:20px;letter-spacing:-.03em">Подписка</span>
+</div>
+
+<sc-if value="{{ importDone }}" hint-placeholder-val="{{ false }}">
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0 24px 60px;text-align:center">
+<span style="width:82px;height:82px;border-radius:50%;background:var(--ml-accent);color:var(--ml-text-on-accent);display:grid;place-items:center;animation:ml-pop .55s var(--ml-ease-slide) both">
+<x-import component-from-global-scope="Icon" name="Check" size="38" stroke-width="2.6" hint-size="38px,38px"></x-import></span>
+<div style="font-family:var(--ml-font-display);font-weight:800;font-size:26px;letter-spacing:-.03em;margin-top:22px;animation:ml-rise .5s var(--ml-ease) .12s both">Подписка активирована!</div>
+<div style="font-size:14px;color:var(--ml-text-2);margin-top:8px;animation:ml-rise .5s var(--ml-ease) .17s both">Тариф «Луна» · 12 дней · 5 устройств</div>
+<div style="display:flex;gap:8px;margin-top:14px;animation:ml-rise .5s var(--ml-ease) .22s both">
+<span style="display:inline-flex;align-items:center;height:30px;padding:0 12px;border-radius:999px;background:var(--ml-surface-2);font-size:12.5px;font-weight:800;color:var(--ml-text-2)">7 серверов</span>
+<span style="display:inline-flex;align-items:center;height:30px;padding:0 12px;border-radius:999px;background:var(--ml-surface-2);font-size:12.5px;font-weight:800;color:var(--ml-text-2)">100 ГБ</span>
+</div>
+<button type="button" onClick="{{ goConnect }}" style="height:52px;width:100%;max-width:300px;margin-top:34px;border:none;border-radius:999px;background:var(--ml-accent);color:var(--ml-text-on-accent);font-family:var(--ml-font);font-size:15px;font-weight:800;cursor:pointer;transition:transform .18s var(--ml-ease);animation:ml-rise .5s var(--ml-ease) .27s both" style-active="transform:scale(.97)">Подключиться</button>
+</div>
+</sc-if>
+
+<sc-if value="{{ importPending }}" hint-placeholder-val="{{ true }}">
+<div style="flex:1;min-height:0;overflow-y:auto;padding:6px 16px 24px">
+<div style="font-size:13.5px;line-height:1.5;color:var(--ml-text-2);margin-bottom:18px;text-wrap:pretty">Отсканируйте QR-код из бота или личного кабинета — либо вставьте ссылку подписки.</div>
+<div style="position:relative;width:100%;aspect-ratio:1;border-radius:24px;background:var(--ml-bg-deep);border:1px solid var(--ml-hairline);overflow:hidden;animation:ml-rise .5s var(--ml-ease) .05s both">
+<span style="position:absolute;top:26px;left:26px;width:44px;height:44px;border-top:3px solid var(--ml-accent);border-left:3px solid var(--ml-accent);border-radius:14px 0 0 0"></span>
+<span style="position:absolute;top:26px;right:26px;width:44px;height:44px;border-top:3px solid var(--ml-accent);border-right:3px solid var(--ml-accent);border-radius:0 14px 0 0"></span>
+<span style="position:absolute;bottom:26px;left:26px;width:44px;height:44px;border-bottom:3px solid var(--ml-accent);border-left:3px solid var(--ml-accent);border-radius:0 0 0 14px"></span>
+<span style="position:absolute;bottom:26px;right:26px;width:44px;height:44px;border-bottom:3px solid var(--ml-accent);border-right:3px solid var(--ml-accent);border-radius:0 0 14px 0"></span>
+<span style="position:absolute;left:26px;right:26px;top:26px;height:2px;background:var(--ml-accent);opacity:.75;animation:ml-scan 2.6s var(--ml-ease) infinite alternate"></span>
+<span style="position:absolute;left:0;right:0;bottom:74px;text-align:center;font-size:12.5px;color:var(--ml-text-muted)">наведите камеру на QR-код</span>
+</div>
+<button type="button" onClick="{{ doImport }}" style="display:flex;align-items:center;justify-content:center;gap:9px;height:52px;width:100%;margin-top:18px;border:none;border-radius:999px;background:var(--ml-accent);color:var(--ml-text-on-accent);font-family:var(--ml-font);font-size:15px;font-weight:800;cursor:pointer;transition:transform .18s var(--ml-ease);animation:ml-rise .5s var(--ml-ease) .1s both" style-active="transform:scale(.97)">
+<x-import component-from-global-scope="Icon" name="Link2" size="18" hint-size="18px,18px"></x-import>Вставить из буфера</button>
+<div style="display:flex;align-items:center;gap:10px;margin:18px 2px 12px">
+<span style="flex:1;height:1px;background:var(--ml-hairline)"></span>
+<span style="font-size:11.5px;font-weight:800;letter-spacing:.1em;color:var(--ml-text-muted)">ИЛИ ВРУЧНУЮ</span>
+<span style="flex:1;height:1px;background:var(--ml-hairline)"></span>
+</div>
+<div style="display:flex;align-items:center;gap:10px;height:52px;padding:0 6px 0 16px;border-radius:16px;background:var(--ml-surface);border:1px solid var(--ml-hairline)">
+<span style="flex:1;min-width:0;font-family:var(--ml-font-mono);font-size:12.5px;color:var(--ml-text-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">https://sub.moonlight.vpn/…</span>
+<button type="button" onClick="{{ doImport }}" style="height:40px;padding:0 16px;border:none;border-radius:999px;background:var(--ml-surface-3);color:var(--ml-text);font-family:var(--ml-font);font-size:13px;font-weight:800;cursor:pointer;transition:transform .18s var(--ml-ease)" style-active="transform:scale(.97)">Добавить</button>
+</div>
+<button type="button" onClick="{{ doImport }}" style="display:flex;align-items:center;gap:14px;width:100%;margin-top:12px;padding:14px 16px;border:1px solid var(--ml-hairline);border-radius:22px;background:var(--ml-surface);cursor:pointer;text-align:left;font-family:var(--ml-font);transition:transform .18s var(--ml-ease)" style-active="transform:scale(.985)">
+<span style="width:44px;height:44px;border-radius:14px;background:var(--tg-blue);color:#fff;display:grid;place-items:center;flex-shrink:0">
+<x-import component-from-global-scope="Icon" name="Send" size="20" hint-size="20px,20px"></x-import></span>
+<span style="flex:1;min-width:0">
+<span style="display:block;font-size:15px;font-weight:800;color:var(--ml-text)">Открыть Telegram-бота</span>
+<span style="display:block;font-size:12.5px;color:var(--ml-text-muted);margin-top:2px">Ссылка придёт в чат и добавится сама</span></span>
+<span style="color:var(--ml-text-muted)">
+<x-import component-from-global-scope="Icon" name="ChevronRight" size="18" stroke-width="2.2" hint-size="18px,18px"></x-import></span>
+</button>
+</div>
+</sc-if>
+</div>
+</sc-if>
+
+<sc-if value="{{ isConnect }}" hint-placeholder-val="{{ true }}">
+<div data-screen-label="Подключение" style="display:flex;flex-direction:column;height:100%;padding-top:54px;animation:ml-fade .35s var(--ml-ease) both">
+<div style="display:flex;align-items:center;gap:12px;padding:8px 18px 2px;height:60px;flex-shrink:0">
+<img src="assets/logo-tile.svg" alt="" width="36" height="36" style="border-radius:11px;display:block">
+<span style="font-family:var(--ml-font-display);font-weight:700;font-size:18px;letter-spacing:-.025em">moonlight</span>
+<span style="flex:1"></span>
+<button type="button" onClick="{{ refresh }}" style="display:inline-flex;align-items:center;gap:8px;height:42px;padding:0 16px;border:none;border-radius:999px;background:var(--ml-surface-2);color:var(--ml-text);font-family:var(--ml-font);font-size:13.5px;font-weight:800;cursor:pointer;flex-shrink:0;transition:transform .18s var(--ml-ease),background .2s var(--ml-ease)" style-active="transform:scale(.95)">
+<span style="display:grid;place-items:center;color:var(--ml-accent-ink);animation:{{ spinAnim }}">
+<x-import component-from-global-scope="Icon" name="RefreshCw" size="17" stroke-width="2.2" hint-size="17px,17px"></x-import></span>{{ refreshLabel }}</button>
+</div>
+
+<div style="flex:1;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;padding:0 20px;transition:transform .44s var(--ml-ease-slide),opacity .3s var(--ml-ease);transform:{{ stageT }};opacity:{{ stageO }}">
+<button type="button" onClick="{{ toggle }}" style="position:relative;width:244px;height:244px;border:none;padding:0;background:none;cursor:pointer;flex-shrink:0;transition:transform .2s var(--ml-ease)" style-active="transform:scale(.975)">
+<span style="position:absolute;inset:-10px;border-radius:50%;border:1px solid var(--ml-accent);transition:opacity .5s var(--ml-ease);opacity:{{ haloO }};animation:ml-breathe 4.2s var(--ml-ease) infinite"></span>
+<span style="position:absolute;inset:0;border-radius:50%;border:2px solid var(--ml-hairline)"></span>
+<span style="position:absolute;inset:0;border-radius:50%;transition:background .6s var(--ml-ease);mask:radial-gradient(farthest-side,transparent calc(100% - 6px),#000 calc(100% - 6px));background:conic-gradient(var(--ml-accent) 0 {{ pct }},transparent 0)"></span>
+<span style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px">
+<span style="display:inline-flex;align-items:center;gap:7px;font-size:11.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;transition:color .4s var(--ml-ease);color:{{ tone }}">
+<span style="width:8px;height:8px;border-radius:50%;transition:background .4s var(--ml-ease);background:{{ tone }};box-shadow:{{ dotGlow }}"></span>{{ statusLabel }}</span>
+<span style="font-family:var(--ml-font-display);font-weight:800;font-size:26px;letter-spacing:-.03em;line-height:1.05;color:var(--ml-text)">{{ bigLabel }}</span>
+<span style="font-family:var(--ml-font-mono);font-size:15px;font-weight:600;letter-spacing:.02em;transition:color .4s var(--ml-ease);color:{{ tone }}">{{ timer }}</span>
+</span>
+</button>
+<span style="font-size:12.5px;color:var(--ml-text-muted);white-space:nowrap;transition:opacity .3s var(--ml-ease)">{{ hint }}</span>
+<div style="display:flex;align-items:center;width:100%;max-width:300px;background:var(--ml-surface);border-radius:18px;padding:14px 4px;animation:ml-rise .5s var(--ml-ease) .12s both">
+<div style="flex:1;text-align:center">
+<div style="font-size:11.5px;font-weight:800;letter-spacing:.1em;color:var(--ml-text-muted)">ЗА СЕССИЮ</div>
+<div style="font-family:var(--ml-font-display);font-weight:800;font-size:19px;letter-spacing:-.03em;margin-top:5px">1,24 ГБ</div>
+</div>
+<span style="width:1px;height:34px;background:var(--ml-hairline)"></span>
+<div style="flex:1;text-align:center">
+<div style="font-size:11.5px;font-weight:800;letter-spacing:.1em;color:var(--ml-text-muted)">ОСТАЛОСЬ</div>
+<div style="font-family:var(--ml-font-display);font-weight:800;font-size:19px;letter-spacing:-.03em;margin-top:5px">12 дней</div>
+</div>
+</div>
+</div>
+
+<div style="display:flex;gap:8px;padding:0 16px 12px;overflow-x:auto;flex-shrink:0;animation:ml-rise .5s var(--ml-ease) .18s both">
+<button type="button" onClick="{{ pickAuto }}" style="display:inline-flex;align-items:center;gap:7px;height:36px;padding:0 14px;border:none;border-radius:999px;font-family:var(--ml-font);font-size:13px;font-weight:800;cursor:pointer;flex-shrink:0;transition:background .25s var(--ml-ease),color .25s var(--ml-ease),transform .18s var(--ml-ease);background:{{ autoBg }};color:{{ autoFg }}" style-active="transform:scale(.95)">
+<x-import component-from-global-scope="Icon" name="Zap" size="14" stroke-width="2.4" hint-size="14px,14px"></x-import>Авто</button>
+<button type="button" onClick="{{ doPing }}" style="display:inline-flex;align-items:center;gap:7px;height:36px;padding:0 14px;border:1px solid var(--ml-hairline);border-radius:999px;background:var(--ml-surface);color:var(--ml-accent-ink);font-family:var(--ml-font);font-size:13px;font-weight:800;cursor:pointer;flex-shrink:0;transition:transform .18s var(--ml-ease),border-color .25s var(--ml-ease)" style-active="transform:scale(.95)">
+<span style="display:grid;place-items:center;animation:{{ pingAnim }}">
+<x-import component-from-global-scope="Icon" name="Activity" size="14" stroke-width="2.4" hint-size="14px,14px"></x-import></span>{{ pingLabel }}</button>
+<sc-for list="{{ favs }}" as="f" hint-placeholder-count="3">
+<button type="button" onClick="{{ f.pick }}" style="display:inline-flex;align-items:center;gap:7px;height:36px;padding:0 14px;border:1px solid var(--ml-hairline);border-radius:999px;background:var(--ml-surface);color:var(--ml-text-2);font-family:var(--ml-font);font-size:13px;font-weight:700;cursor:pointer;flex-shrink:0;transition:transform .18s var(--ml-ease),border-color .25s var(--ml-ease)" style-active="transform:scale(.95)">
+<span style="font-size:15px">{{ f.flag }}</span>{{ f.pingLabel }}</button>
+</sc-for>
+</div>
+
+<div style="padding:0 16px;margin-bottom:148px;flex-shrink:0;animation:ml-rise .5s var(--ml-ease) .24s both">
+<button type="button" onClick="{{ toggleList }}" style="display:flex;align-items:center;gap:12px;width:100%;padding:10px 14px 10px 10px;border:1px solid var(--ml-hairline);border-radius:999px;background:var(--ml-surface);cursor:pointer;text-align:left;font-family:var(--ml-font);transition:transform .18s var(--ml-ease)" style-active="transform:scale(.985)">
+<span style="width:40px;height:40px;border-radius:999px;background:var(--ml-surface-2);display:grid;place-items:center;font-size:20px;flex-shrink:0;color:var(--ml-accent-ink)">
+<sc-if value="{{ srvAuto }}" hint-placeholder-val="{{ false }}">
+<x-import component-from-global-scope="Icon" name="Zap" size="19" stroke-width="2.2" hint-size="19px,19px"></x-import>
+</sc-if>
+<sc-if value="{{ srvNotAuto }}" hint-placeholder-val="{{ true }}">{{ srvFlag }}</sc-if>
+</span>
+<span style="flex:1;min-width:0">
+<span style="display:block;font-size:14.5px;font-weight:800;color:var(--ml-text)">{{ srvCity }}</span>
+<span style="display:block;font-size:12px;color:var(--ml-text-muted);margin-top:1px">{{ srvSub }}</span></span>
+<span style="color:var(--ml-text-muted);transition:transform .34s var(--ml-ease-slide);transform:{{ chev }}">
+<x-import component-from-global-scope="Icon" name="ChevronDown" size="20" stroke-width="2.2" hint-size="20px,20px"></x-import></span>
+</button>
+<div style="overflow:hidden;transition:max-height .44s var(--ml-ease-slide);max-height:{{ listH }}">
+<div style="margin-top:8px;background:var(--ml-surface);border:1px solid var(--ml-hairline);border-radius:22px;padding:8px;max-height:270px;overflow-y:auto">
+<sc-for list="{{ items }}" as="s" hint-placeholder-count="5">
+<button type="button" onClick="{{ s.pick }}" style="display:flex;align-items:center;gap:12px;width:100%;padding:11px 10px;border:none;border-radius:16px;cursor:pointer;text-align:left;font-family:var(--ml-font);transition:background .25s var(--ml-ease),transform .18s var(--ml-ease);background:{{ s.rowBg }}" style-active="transform:scale(.985)">
+<span style="font-size:20px;flex-shrink:0">{{ s.flag }}</span>
+<span style="flex:1;min-width:0">
+<span style="display:block;font-size:14px;font-weight:700;color:var(--ml-text)">{{ s.city }}</span>
+<span style="display:block;font-size:12px;color:var(--ml-text-muted);margin-top:1px">{{ s.squad }} · {{ s.proto }}</span></span>
+<span style="display:inline-flex;align-items:center;gap:5px">
+<span style="width:6px;height:6px;border-radius:50%;background:{{ s.pingColor }}"></span>
+<span style="font-family:var(--ml-font-mono);font-size:12.5px;font-weight:600;color:var(--ml-text-2)">{{ s.pingLabel }}</span></span>
+</button>
+</sc-for>
+</div>
+</div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isSub }}" hint-placeholder-val="{{ false }}">
+<div data-screen-label="Подписка" style="display:flex;flex-direction:column;height:100%;padding-top:54px;animation:ml-fade .35s var(--ml-ease) both">
+<div style="display:flex;align-items:center;gap:12px;padding:10px 18px 4px;flex-shrink:0">
+<h1 style="flex:1;font-family:var(--ml-font-display);font-weight:800;font-size:26px;letter-spacing:-.03em;margin:0">Подписка</h1>
+<button type="button" onClick="{{ refresh }}" style="width:42px;height:42px;border:none;border-radius:999px;background:var(--ml-surface-2);color:var(--ml-accent-ink);display:grid;place-items:center;cursor:pointer;flex-shrink:0;transition:transform .18s var(--ml-ease)" style-active="transform:scale(.92)">
+<span style="display:grid;place-items:center;animation:{{ spinAnim }}">
+<x-import component-from-global-scope="Icon" name="RefreshCw" size="19" stroke-width="2.2" hint-size="19px,19px"></x-import></span>
+</button>
+</div>
+<div style="flex:1;min-height:0;overflow-y:auto;padding:10px 18px 110px;display:grid;align-content:start;grid-auto-rows:max-content;gap:12px">
+<div style="position:relative;overflow:hidden;background:var(--ml-accent);color:var(--ml-text-on-accent);border-radius:26px;padding:20px 22px;animation:ml-rise .5s var(--ml-ease) both">
+<span style="position:absolute;right:-70px;bottom:-120px;width:230px;height:230px;border-radius:50%;background:var(--ml-ink-wash-soft)"></span>
+<div style="position:relative;display:flex;align-items:flex-start;gap:12px">
+<div style="flex:1;min-width:0">
+<div style="font-size:12.5px;font-weight:800;opacity:.6">Тариф</div>
+<div style="font-family:var(--ml-font-display);font-weight:800;font-size:28px;letter-spacing:-.035em;margin-top:3px">Луна</div>
+</div>
+<span style="background:var(--ml-ink-wash);border-radius:999px;padding:5px 11px;font-size:11.5px;font-weight:800;white-space:nowrap">Активна</span>
+</div>
+<div style="position:relative;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:18px">
+<div style="min-width:0"><div style="font-size:10.5px;font-weight:800;letter-spacing:.06em;opacity:.65;white-space:nowrap">ОСТАЛОСЬ</div><div style="font-family:var(--ml-font-display);font-weight:800;font-size:15px;letter-spacing:-.03em;margin-top:4px;white-space:nowrap">12 дней</div></div>
+<div style="min-width:0"><div style="font-size:10.5px;font-weight:800;letter-spacing:.06em;opacity:.65;white-space:nowrap">ТРАФИК</div><div style="font-family:var(--ml-font-display);font-weight:800;font-size:15px;letter-spacing:-.03em;margin-top:4px;white-space:nowrap">24,8 ГБ</div></div>
+<div style="min-width:0"><div style="font-size:10.5px;font-weight:800;letter-spacing:.06em;opacity:.65;white-space:nowrap">УСТРОЙСТВА</div><div style="font-family:var(--ml-font-display);font-weight:800;font-size:15px;letter-spacing:-.03em;margin-top:4px;white-space:nowrap">2 / 5</div></div>
+</div>
+</div>
+<div style="background:var(--ml-surface);border-radius:22px;padding:16px 18px;animation:ml-rise .5s var(--ml-ease) .06s both">
+<div style="display:flex;align-items:baseline;justify-content:space-between;gap:10px">
+<span style="font-size:11.5px;font-weight:800;letter-spacing:.1em;color:var(--ml-text-muted)">ТРАФИК</span>
+<span style="font-size:12.5px;font-weight:700;color:var(--ml-text-2);white-space:nowrap">24,8 из 100 ГБ</span>
+</div>
+<div style="height:8px;border-radius:999px;background:var(--ml-surface-3);margin-top:12px;overflow:hidden">
+<span style="display:block;width:25%;height:100%;border-radius:999px;background:var(--ml-accent);transform-origin:left;animation:ml-fade .6s var(--ml-ease) .3s both"></span>
+</div>
+<div style="font-size:12.5px;color:var(--ml-text-muted);margin-top:10px">Сброс 1 сентября · действует до 25 августа</div>
+</div>
+<div style="background:var(--ml-surface);border-radius:22px;padding:14px 16px;animation:ml-rise .5s var(--ml-ease) .12s both">
+<div style="font-size:11.5px;font-weight:800;letter-spacing:.1em;color:var(--ml-text-muted)">ССЫЛКА ПОДПИСКИ</div>
+<div style="display:flex;align-items:center;gap:8px;margin-top:10px">
+<span style="flex:1;min-width:0;font-family:var(--ml-font-mono);font-size:12px;color:var(--ml-text-2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">https://sub.moonlight.vpn/8f31c2a7</span>
+<button type="button" style="width:36px;height:36px;border:none;border-radius:12px;background:var(--ml-surface-2);color:var(--ml-text-2);display:grid;place-items:center;cursor:pointer;flex-shrink:0;transition:transform .18s var(--ml-ease)" style-active="transform:scale(.92)">
+<x-import component-from-global-scope="Icon" name="Copy" size="16" hint-size="16px,16px"></x-import></button>
+<button type="button" style="width:36px;height:36px;border:none;border-radius:12px;background:var(--ml-surface-2);color:var(--ml-text-2);display:grid;place-items:center;cursor:pointer;flex-shrink:0;transition:transform .18s var(--ml-ease)" style-active="transform:scale(.92)">
+<x-import component-from-global-scope="Icon" name="QrCode" size="16" hint-size="16px,16px"></x-import></button>
+</div>
+</div>
+<button type="button" onClick="{{ refresh }}" style="display:flex;align-items:center;gap:14px;width:100%;padding:14px 16px;border:none;border-radius:22px;background:var(--ml-surface);cursor:pointer;text-align:left;font-family:var(--ml-font);transition:transform .18s var(--ml-ease);animation:ml-rise .5s var(--ml-ease) .18s both" style-active="transform:scale(.985)">
+<span style="width:42px;height:42px;border-radius:13px;background:var(--ml-cat-1);color:var(--ml-text-on-accent);display:grid;place-items:center;flex-shrink:0">
+<span style="display:grid;place-items:center;animation:{{ spinAnim }}">
+<x-import component-from-global-scope="Icon" name="RefreshCw" size="19" stroke-width="2.2" hint-size="19px,19px"></x-import></span></span>
+<span style="flex:1;min-width:0">
+<span style="display:block;font-size:15px;font-weight:800;color:var(--ml-text)">Обновить подписку</span>
+<span style="display:block;font-size:12.5px;color:var(--ml-text-muted);margin-top:2px;transition:color .3s var(--ml-ease)">{{ refreshMeta }}</span></span>
+</button>
+<div style="background:var(--ml-surface);border-radius:22px;overflow:hidden;min-height:max-content;animation:ml-rise .5s var(--ml-ease) .24s both">
+<button type="button" style="display:flex;align-items:center;gap:14px;width:100%;padding:14px 16px;border:none;background:none;cursor:pointer;text-align:left;font-family:var(--ml-font);transition:transform .18s var(--ml-ease)" style-active="transform:scale(.985)">
+<span style="width:42px;height:42px;border-radius:13px;background:var(--ml-cat-2);color:var(--ml-text-on-accent);display:grid;place-items:center;flex-shrink:0">
+<x-import component-from-global-scope="Icon" name="Sparkles" size="19" hint-size="19px,19px"></x-import></span>
+<span style="flex:1;min-width:0">
+<span style="display:block;font-size:15px;font-weight:800;color:var(--ml-text)">Продлить подписку</span>
+<span style="display:block;font-size:12.5px;color:var(--ml-text-muted);margin-top:2px">Оплата в боте или кабинете</span></span>
+<span style="color:var(--ml-text-muted)"><x-import component-from-global-scope="Icon" name="ExternalLink" size="17" hint-size="17px,17px"></x-import></span>
+</button>
+<div style="height:1px;background:var(--ml-hairline-soft);margin-left:72px"></div>
+<button type="button" onClick="{{ goImport }}" style="display:flex;align-items:center;gap:14px;width:100%;padding:14px 16px;border:none;background:none;cursor:pointer;text-align:left;font-family:var(--ml-font);transition:transform .18s var(--ml-ease)" style-active="transform:scale(.985)">
+<span style="width:42px;height:42px;border-radius:13px;background:var(--ml-cat-4);color:var(--ml-text-on-accent);display:grid;place-items:center;flex-shrink:0">
+<x-import component-from-global-scope="Icon" name="Plus" size="19" hint-size="19px,19px"></x-import></span>
+<span style="flex:1;min-width:0">
+<span style="display:block;font-size:15px;font-weight:800;color:var(--ml-text)">Добавить подписку</span>
+<span style="display:block;font-size:12.5px;color:var(--ml-text-muted);margin-top:2px">QR-код или ссылка</span></span>
+<span style="color:var(--ml-text-muted)"><x-import component-from-global-scope="Icon" name="ChevronRight" size="18" stroke-width="2.2" hint-size="18px,18px"></x-import></span>
+</button>
+</div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isSplit }}" hint-placeholder-val="{{ false }}">
+<div data-screen-label="Раздельное туннелирование" style="display:flex;flex-direction:column;height:100%;padding-top:54px;animation:ml-fade .35s var(--ml-ease) both">
+<div style="display:flex;align-items:center;gap:12px;padding:8px 18px 6px;height:56px;flex-shrink:0">
+<button type="button" onClick="{{ goSettings }}" style="width:38px;height:38px;border:none;border-radius:999px;background:var(--ml-surface-2);color:var(--ml-text-2);display:grid;place-items:center;cursor:pointer;transition:transform .18s var(--ml-ease)" style-active="transform:scale(.92)">
+<x-import component-from-global-scope="Icon" name="ChevronLeft" size="20" stroke-width="2.2" hint-size="20px,20px"></x-import></button>
+<span style="font-family:var(--ml-font-display);font-weight:800;font-size:20px;letter-spacing:-.03em">Приложения</span>
+</div>
+<div style="flex:1;min-height:0;overflow-y:auto;padding:8px 18px 110px;display:grid;align-content:start;grid-auto-rows:max-content;gap:14px">
+<div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:3px;padding:3px;border-radius:999px;background:var(--ml-surface-2);animation:ml-rise .5s var(--ml-ease) both">
+<button type="button" onClick="{{ splitAll }}" style="height:34px;border:none;border-radius:999px;font-family:var(--ml-font);font-size:12.5px;font-weight:800;cursor:pointer;transition:background .25s var(--ml-ease),color .25s var(--ml-ease);background:{{ splitAllBg }};color:{{ splitAllFg }}">Весь трафик</button>
+<button type="button" onClick="{{ splitOnly }}" style="height:34px;border:none;border-radius:999px;font-family:var(--ml-font);font-size:12.5px;font-weight:800;cursor:pointer;transition:background .25s var(--ml-ease),color .25s var(--ml-ease);background:{{ splitOnlyBg }};color:{{ splitOnlyFg }}">Только эти</button>
+<button type="button" onClick="{{ splitExcept }}" style="height:34px;border:none;border-radius:999px;font-family:var(--ml-font);font-size:12.5px;font-weight:800;cursor:pointer;transition:background .25s var(--ml-ease),color .25s var(--ml-ease);background:{{ splitExceptBg }};color:{{ splitExceptFg }}">Кроме этих</button>
+</div>
+<div style="font-size:13px;line-height:1.5;color:var(--ml-text-muted);padding:0 2px;text-wrap:pretty">{{ splitHint }}</div>
+<div style="background:var(--ml-surface);border-radius:22px;overflow:hidden;min-height:max-content;transition:opacity .3s var(--ml-ease);opacity:{{ splitListO }};animation:ml-rise .5s var(--ml-ease) .08s both">
+<sc-for list="{{ apps }}" as="a" hint-placeholder-count="6">
+<div style="display:flex;align-items:center;gap:14px;padding:12px 16px">
+<span style="width:42px;height:42px;border-radius:13px;display:grid;place-items:center;font-family:var(--ml-font-display);font-weight:800;font-size:17px;color:var(--ml-text-on-accent);flex-shrink:0;background:{{ a.fill }}">{{ a.letter }}</span>
+<span style="flex:1;min-width:0">
+<span style="display:block;font-size:15px;font-weight:700;color:var(--ml-text)">{{ a.name }}</span>
+<span style="display:block;font-size:12px;color:var(--ml-text-muted);margin-top:1px">{{ a.pkg }}</span></span>
+<button type="button" onClick="{{ a.toggle }}" role="switch" style="position:relative;width:44px;height:26px;border:none;border-radius:999px;cursor:pointer;flex-shrink:0;transition:background .25s var(--ml-ease);background:{{ a.trackBg }}">
+<span style="position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:transform .25s var(--ml-ease-slide);transform:{{ a.knobT }}"></span>
+</button>
+</div>
+</sc-for>
+</div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isSettings }}" hint-placeholder-val="{{ false }}">
+<div data-screen-label="Настройки" style="display:flex;flex-direction:column;height:100%;padding-top:54px;animation:ml-fade .35s var(--ml-ease) both">
+<div style="padding:10px 18px 4px;flex-shrink:0">
+<h1 style="font-family:var(--ml-font-display);font-weight:800;font-size:26px;letter-spacing:-.03em;margin:0">Настройки</h1>
+</div>
+<div style="flex:1;min-height:0;overflow-y:auto;padding:12px 18px 110px;display:grid;align-content:start;grid-auto-rows:max-content;gap:14px">
+<div style="font-size:11.5px;font-weight:800;letter-spacing:.1em;color:var(--ml-text-muted);padding:0 2px;animation:ml-rise .5s var(--ml-ease) both">ПОДКЛЮЧЕНИЕ</div>
+<div style="background:var(--ml-surface);border-radius:22px;overflow:hidden;min-height:max-content;animation:ml-rise .5s var(--ml-ease) .05s both">
+<button type="button" onClick="{{ goSplit }}" style="display:flex;align-items:center;gap:14px;width:100%;padding:14px 16px;border:none;background:none;cursor:pointer;text-align:left;font-family:var(--ml-font);transition:transform .18s var(--ml-ease)" style-active="transform:scale(.985)">
+<span style="width:42px;height:42px;border-radius:13px;background:var(--ml-cat-2);color:var(--ml-text-on-accent);display:grid;place-items:center;flex-shrink:0">
+<x-import component-from-global-scope="Icon" name="Layers" size="19" hint-size="19px,19px"></x-import></span>
+<span style="flex:1;min-width:0">
+<span style="display:block;font-size:15px;font-weight:700;color:var(--ml-text)">Раздельное туннелирование</span>
+<span style="display:block;font-size:12px;color:var(--ml-text-muted);margin-top:1px">{{ splitSummary }}</span></span>
+<span style="color:var(--ml-text-muted)"><x-import component-from-global-scope="Icon" name="ChevronRight" size="18" stroke-width="2.2" hint-size="18px,18px"></x-import></span>
+</button>
+</div>
+
+<div style="font-size:11.5px;font-weight:800;letter-spacing:.1em;color:var(--ml-text-muted);padding:6px 2px 0;animation:ml-rise .5s var(--ml-ease) .1s both">ПРИЛОЖЕНИЕ</div>
+<div style="background:var(--ml-surface);border-radius:22px;overflow:hidden;min-height:max-content;animation:ml-rise .5s var(--ml-ease) .15s both">
+<div style="display:flex;align-items:center;gap:14px;padding:14px 16px">
+<span style="flex:1;min-width:0;font-size:15px;font-weight:700">Тема</span>
+<span style="display:flex;gap:3px;padding:3px;border-radius:999px;background:var(--ml-surface-2)">
+<button type="button" onClick="{{ setDark }}" style="height:28px;padding:0 12px;border:none;border-radius:999px;font-family:var(--ml-font);font-size:12px;font-weight:800;cursor:pointer;transition:background .25s var(--ml-ease),color .25s var(--ml-ease);background:{{ darkBg }};color:{{ darkFg }}">Тёмная</button>
+<button type="button" onClick="{{ setLight }}" style="height:28px;padding:0 12px;border:none;border-radius:999px;font-family:var(--ml-font);font-size:12px;font-weight:800;cursor:pointer;transition:background .25s var(--ml-ease),color .25s var(--ml-ease);background:{{ lightBg }};color:{{ lightFg }}">Светлая</button>
+</span>
+</div>
+<div style="height:1px;background:var(--ml-hairline-soft);margin-left:16px"></div>
+<div style="display:flex;align-items:center;gap:14px;padding:14px 16px">
+<span style="flex:1;min-width:0;font-size:15px;font-weight:700">Язык</span>
+<span style="display:flex;gap:3px;padding:3px;border-radius:999px;background:var(--ml-surface-2)">
+<button type="button" onClick="{{ setRu }}" style="height:28px;padding:0 12px;border:none;border-radius:999px;font-family:var(--ml-font);font-size:12px;font-weight:800;cursor:pointer;transition:background .25s var(--ml-ease),color .25s var(--ml-ease);background:{{ ruBg }};color:{{ ruFg }}">RU</button>
+<button type="button" onClick="{{ setEn }}" style="height:28px;padding:0 12px;border:none;border-radius:999px;font-family:var(--ml-font);font-size:12px;font-weight:800;cursor:pointer;transition:background .25s var(--ml-ease),color .25s var(--ml-ease);background:{{ enBg }};color:{{ enFg }}">EN</button>
+</span>
+</div>
+<div style="height:1px;background:var(--ml-hairline-soft);margin-left:16px"></div>
+<div style="display:flex;align-items:center;gap:14px;padding:14px 16px">
+<span style="flex:1;min-width:0">
+<span style="display:block;font-size:15px;font-weight:700">Уведомления</span>
+<span style="display:block;font-size:12px;color:var(--ml-text-muted);margin-top:1px">Об окончании подписки и трафика</span></span>
+<button type="button" onClick="{{ toggleNotif }}" role="switch" style="position:relative;width:44px;height:26px;border:none;border-radius:999px;cursor:pointer;flex-shrink:0;transition:background .25s var(--ml-ease);background:{{ notifTrack }}">
+<span style="position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:transform .25s var(--ml-ease-slide);transform:{{ notifKnob }}"></span></button>
+</div>
+</div>
+
+<div style="font-size:11.5px;font-weight:800;letter-spacing:.1em;color:var(--ml-text-muted);padding:6px 2px 0;animation:ml-rise .5s var(--ml-ease) .2s both">ПОДДЕРЖКА</div>
+<div style="background:var(--ml-surface);border-radius:22px;overflow:hidden;min-height:max-content;animation:ml-rise .5s var(--ml-ease) .25s both">
+<button type="button" style="display:flex;align-items:center;gap:14px;width:100%;padding:14px 16px;border:none;background:none;cursor:pointer;text-align:left;font-family:var(--ml-font);transition:transform .18s var(--ml-ease)" style-active="transform:scale(.985)">
+<span style="width:42px;height:42px;border-radius:13px;background:var(--ml-cat-1);color:var(--ml-text-on-accent);display:grid;place-items:center;flex-shrink:0">
+<x-import component-from-global-scope="Icon" name="MessageCircle" size="19" hint-size="19px,19px"></x-import></span>
+<span style="flex:1;min-width:0">
+<span style="display:block;font-size:15px;font-weight:700;color:var(--ml-text)">Наш канал</span>
+<span style="display:block;font-size:12px;color:var(--ml-text-muted);margin-top:1px">Новости и обновления</span></span>
+<span style="color:var(--ml-text-muted)"><x-import component-from-global-scope="Icon" name="ExternalLink" size="17" hint-size="17px,17px"></x-import></span>
+</button>
+<div style="height:1px;background:var(--ml-hairline-soft);margin-left:72px"></div>
+<button type="button" style="display:flex;align-items:center;gap:14px;width:100%;padding:14px 16px;border:none;background:none;cursor:pointer;text-align:left;font-family:var(--ml-font);transition:transform .18s var(--ml-ease)" style-active="transform:scale(.985)">
+<span style="width:42px;height:42px;border-radius:13px;background:var(--ml-cat-4);color:var(--ml-text-on-accent);display:grid;place-items:center;flex-shrink:0">
+<x-import component-from-global-scope="Icon" name="Headphones" size="19" hint-size="19px,19px"></x-import></span>
+<span style="flex:1;min-width:0">
+<span style="display:block;font-size:15px;font-weight:700;color:var(--ml-text)">Поддержка</span>
+<span style="display:block;font-size:12px;color:var(--ml-text-muted);margin-top:1px">Мы на связи 24/7</span></span>
+<span style="color:var(--ml-text-muted)"><x-import component-from-global-scope="Icon" name="ExternalLink" size="17" hint-size="17px,17px"></x-import></span>
+</button>
+<div style="height:1px;background:var(--ml-hairline-soft);margin-left:72px"></div>
+<button type="button" onClick="{{ goOnboard }}" style="display:flex;align-items:center;gap:14px;width:100%;padding:14px 16px;border:none;background:none;cursor:pointer;text-align:left;font-family:var(--ml-font);transition:transform .18s var(--ml-ease)" style-active="transform:scale(.985)">
+<span style="width:42px;height:42px;border-radius:13px;background:var(--ml-surface-2);color:var(--ml-accent-ink);display:grid;place-items:center;flex-shrink:0">
+<x-import component-from-global-scope="Icon" name="Info" size="19" hint-size="19px,19px"></x-import></span>
+<span style="flex:1;min-width:0">
+<span style="display:block;font-size:15px;font-weight:700;color:var(--ml-text)">О приложении</span>
+<span style="display:block;font-size:12px;color:var(--ml-text-muted);margin-top:1px">Версия 1.0.4 · показать приветствие</span></span>
+<span style="color:var(--ml-text-muted)"><x-import component-from-global-scope="Icon" name="ChevronRight" size="18" stroke-width="2.2" hint-size="18px,18px"></x-import></span>
+</button>
+</div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ showTabs }}" hint-placeholder-val="{{ true }}">
+<div style="position:absolute;left:50%;bottom:26px;transform:translateX(-50%);z-index:30;display:flex;gap:4px;padding:6px;border-radius:999px;background:var(--ml-surface-nav);border:1px solid var(--ml-hairline);box-shadow:var(--ml-shadow-nav,0 12px 30px rgba(0,0,0,.45));backdrop-filter:blur(18px)">
+<span style="position:absolute;top:6px;left:6px;width:52px;height:52px;border-radius:999px;background:var(--ml-accent);transition:transform .38s var(--ml-ease-slide);transform:{{ pillT }}"></span>
+<button type="button" onClick="{{ goConnect }}" aria-label="Подключение" style="position:relative;width:52px;height:52px;border:none;border-radius:999px;background:none;display:grid;place-items:center;cursor:pointer;transition:color .25s var(--ml-ease),transform .18s var(--ml-ease);color:{{ tabConnect }}" style-active="transform:scale(.92)">
+<x-import component-from-global-scope="Icon" name="Power" size="22" hint-size="22px,22px"></x-import></button>
+<button type="button" onClick="{{ goSub }}" aria-label="Подписка" style="position:relative;width:52px;height:52px;border:none;border-radius:999px;background:none;display:grid;place-items:center;cursor:pointer;transition:color .25s var(--ml-ease),transform .18s var(--ml-ease);color:{{ tabSub }}" style-active="transform:scale(.92)">
+<x-import component-from-global-scope="Icon" name="Sparkles" size="22" hint-size="22px,22px"></x-import></button>
+<button type="button" onClick="{{ goSettings }}" aria-label="Настройки" style="position:relative;width:52px;height:52px;border:none;border-radius:999px;background:none;display:grid;place-items:center;cursor:pointer;transition:color .25s var(--ml-ease),transform .18s var(--ml-ease);color:{{ tabSettings }}" style-active="transform:scale(.92)">
+<x-import component-from-global-scope="Icon" name="Settings" size="22" hint-size="22px,22px"></x-import></button>
+</div>
+</sc-if>
+
+</div>
+</x-import>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:402,&quot;height&quot;:874}}">
+const SERVERS = [
+  { id:"nl", flag:"🇳🇱", city:"Амстердам", country:"Нидерланды", ping:24, squad:"Европа", proto:"VLESS Reality" },
+  { id:"fi", flag:"🇫🇮", city:"Хельсинки", country:"Финляндия", ping:18, squad:"Европа", proto:"VLESS Reality" },
+  { id:"de", flag:"🇩🇪", city:"Франкфурт", country:"Германия", ping:31, squad:"Европа", proto:"VLESS Reality" },
+  { id:"se", flag:"🇸🇪", city:"Стокгольм", country:"Швеция", ping:27, squad:"Европа", proto:"VLESS Reality" },
+  { id:"tr", flag:"🇹🇷", city:"Стамбул", country:"Турция", ping:44, squad:"Ближний Восток", proto:"VLESS Reality" },
+  { id:"us", flag:"🇺🇸", city:"Нью-Йорк", country:"США", ping:96, squad:"Америка", proto:"VLESS Reality" },
+  { id:"jp", flag:"🇯🇵", city:"Токио", country:"Япония", ping:142, squad:"Азия", proto:"VLESS Reality" },
+];
+
+const APPS = [
+  { id:"tg", name:"Telegram", pkg:"org.telegram.messenger", letter:"T", fill:"var(--ml-cat-3)" },
+  { id:"yt", name:"YouTube", pkg:"com.google.android.youtube", letter:"Y", fill:"var(--ml-cat-5)" },
+  { id:"br", name:"Браузер", pkg:"com.android.chrome", letter:"Б", fill:"var(--ml-cat-2)" },
+  { id:"sp", name:"Spotify", pkg:"com.spotify.music", letter:"S", fill:"var(--ml-cat-1)" },
+  { id:"bank", name:"Банк", pkg:"ru.bank.mobile", letter:"Б", fill:"var(--ml-cat-4)" },
+  { id:"gos", name:"Госуслуги", pkg:"ru.gosuslugi.app", letter:"Г", fill:"var(--ml-cat-3)" },
+  { id:"map", name:"Карты", pkg:"ru.yandex.maps", letter:"К", fill:"var(--ml-cat-5)" },
+];
+
+const TABS = ["connect", "sub", "settings"];
+const ON = "var(--ml-accent)", OFF = "var(--ml-surface-3)";
+
+function pingColor(p) {
+  if (p < 40) return "var(--ml-st-up-ink)";
+  if (p < 100) return "var(--ml-st-degraded-ink)";
+  return "var(--ml-st-partial-ink)";
+}
+function fmt(t) {
+  const h = String(Math.floor(t / 3600)).padStart(2, "0");
+  const m = String(Math.floor(t / 60) % 60).padStart(2, "0");
+  const s = String(t % 60).padStart(2, "0");
+  return h + ":" + m + ":" + s;
+}
+
+class Component extends DCLogic {
+  state = {
+    page: "connect", on: true, open: false, srv: "nl", auto: false, t: 767,
+    theme: "dark", lang: "ru", notif: true,
+    splitMode: "all", apps: { tg: true, yt: true, br: false, sp: false, bank: false, gos: false, map: false },
+    importDone: false, refreshing: false, refreshed: false,
+    pinging: false, pings: null,
+  };
+
+  componentDidMount() {
+    this.iv = setInterval(() => this.setState(s => (s.on ? { t: s.t + 1 } : null)), 1000);
+  }
+  componentWillUnmount() { clearInterval(this.iv); clearTimeout(this.rt); clearTimeout(this.pt); }
+
+  doPing() {
+    if (this.state.pinging) return;
+    this.setState({ pinging: true });
+    clearTimeout(this.pt);
+    this.pt = setTimeout(() => {
+      const pings = {};
+      SERVERS.forEach(s => {
+        const jitter = Math.round((Math.random() - 0.45) * Math.max(6, s.ping * 0.3));
+        pings[s.id] = Math.max(9, s.ping + jitter);
+      });
+      this.setState({ pinging: false, pings });
+    }, 1300);
+  }
+
+  go(page) { this.setState({ page, open: false }); }
+  seg(active) {
+    return active
+      ? { bg: "var(--ml-accent)", fg: "var(--ml-text-on-accent)" }
+      : { bg: "transparent", fg: "var(--ml-text-muted)" };
+  }
+  doRefresh() {
+    if (this.state.refreshing) return;
+    this.setState({ refreshing: true, refreshed: false });
+    clearTimeout(this.rt);
+    this.rt = setTimeout(() => this.setState({ refreshing: false, refreshed: true }), 1400);
+  }
+
+  renderVals() {
+    const st = this.state;
+    const srv = SERVERS.find(s => s.id === st.srv) || SERVERS[0];
+    const ping = s => (st.pings && st.pings[s.id] != null ? st.pings[s.id] : s.ping);
+    const items = SERVERS.map(s => ({
+      ...s,
+      ping: ping(s),
+      pingLabel: st.pinging ? "…" : ping(s) + " ms",
+      pingColor: pingColor(ping(s)),
+      rowBg: s.id === st.srv && !st.auto ? "var(--ml-surface-2)" : "transparent",
+      pick: () => this.setState({ srv: s.id, auto: false, open: false }),
+    }));
+    const selCount = APPS.filter(a => st.apps[a.id]).length;
+    const splitHint = st.splitMode === "all"
+      ? "Через туннель идёт весь трафик устройства."
+      : st.splitMode === "only"
+        ? "Через туннель пойдут только отмеченные приложения — остальные напрямую."
+        : "Отмеченные приложения пойдут напрямую, весь остальной трафик — через туннель.";
+    const splitSummary = st.splitMode === "all" ? "Весь трафик" : selCount + " прил. · " + (st.splitMode === "only" ? "только эти" : "кроме этих");
+    const dark = this.seg(st.theme === "dark"), light = this.seg(st.theme === "light");
+    const ru = this.seg(st.lang === "ru"), en = this.seg(st.lang === "en");
+    const sAll = this.seg(st.splitMode === "all"), sOnly = this.seg(st.splitMode === "only"), sExc = this.seg(st.splitMode === "except");
+    const tabColor = p => (st.page === p ? "var(--ml-text-on-accent)" : "var(--ml-text-muted)");
+
+    return {
+      theme: st.theme, isDark: st.theme === "dark",
+      isConnect: st.page === "connect", isSub: st.page === "sub",
+      isSettings: st.page === "settings", isSplit: st.page === "split",
+      isImport: st.page === "import", isOnboard: st.page === "onboard",
+      showTabs: TABS.indexOf(st.page) >= 0,
+      pillT: "translateX(" + Math.max(0, TABS.indexOf(st.page)) * 56 + "px)",
+      tabConnect: tabColor("connect"), tabSub: tabColor("sub"), tabSettings: tabColor("settings"),
+
+      goConnect: () => this.go("connect"), goSub: () => this.go("sub"),
+      goSettings: () => this.go("settings"), goSplit: () => this.go("split"), goOnboard: () => this.go("onboard"),
+      goImport: () => this.setState({ page: "import", importDone: false }),
+      doImport: () => this.setState({ importDone: true }),
+      importDone: st.importDone, importPending: !st.importDone,
+
+      refresh: () => this.doRefresh(),
+      refreshLabel: st.refreshing ? "Обновление" : "Обновить",
+      spinAnim: st.refreshing ? "ml-spin .9s linear infinite" : "none",
+      doPing: () => this.doPing(),
+      pingAnim: st.pinging ? "ml-blink .9s var(--ml-ease) infinite" : "none",
+      pingLabel: st.pinging ? "Замер…" : "Пинг",
+      refreshMeta: st.refreshing ? "Синхронизация с сервером…" : st.refreshed ? "Обновлено только что" : "Проверить серверы, дни и трафик",
+
+      toggle: () => this.setState(s => ({ on: !s.on, t: 0 })),
+      toggleList: () => this.setState(s => ({ open: !s.open })),
+      pickAuto: () => this.setState({ auto: true, srv: "fi", open: false }),
+      items, favs: items.slice(0, 3),
+      timer: fmt(st.t),
+      statusLabel: st.on ? "Защищено" : "Отключено",
+      bigLabel: st.on ? "Соединение" : "Подключить",
+      hint: st.on ? "нажмите, чтобы отключить" : "нажмите, чтобы подключиться",
+      tone: st.on ? "var(--ml-accent-ink)" : "var(--ml-text-muted)",
+      dotGlow: st.on ? "var(--ml-glow-lime-sm, 0 0 10px rgba(210,255,31,.7))" : "none",
+      pct: st.on ? "72%" : "0%",
+      haloO: st.on ? ".5" : "0",
+      chev: st.open ? "rotate(180deg)" : "rotate(0deg)",
+      listH: st.open ? "286px" : "0px",
+      stageT: st.open ? "scale(.72) translateY(-40px)" : "scale(1) translateY(0)",
+      stageO: st.open ? ".45" : "1",
+      autoBg: st.auto ? "var(--ml-accent)" : "var(--ml-surface)",
+      autoFg: st.auto ? "var(--ml-text-on-accent)" : "var(--ml-text-2)",
+      srvFlag: srv.flag, srvAuto: st.auto, srvNotAuto: !st.auto,
+      srvCity: st.auto ? "Авто · " + srv.city : srv.city,
+      srvSub: srv.country + " · " + srv.proto + " · " + (st.pinging ? "замер…" : ping(srv) + " ms"),
+
+      apps: APPS.map(a => ({
+        ...a,
+        on: st.apps[a.id],
+        trackBg: st.apps[a.id] ? ON : OFF,
+        knobT: st.apps[a.id] ? "translateX(18px)" : "translateX(0)",
+        toggle: () => this.setState(s => ({ apps: { ...s.apps, [a.id]: !s.apps[a.id] } })),
+      })),
+      splitHint, splitSummary,
+      splitListO: st.splitMode === "all" ? ".4" : "1",
+      splitAll: () => this.setState({ splitMode: "all" }),
+      splitOnly: () => this.setState({ splitMode: "only" }),
+      splitExcept: () => this.setState({ splitMode: "except" }),
+      splitAllBg: sAll.bg, splitAllFg: sAll.fg,
+      splitOnlyBg: sOnly.bg, splitOnlyFg: sOnly.fg,
+      splitExceptBg: sExc.bg, splitExceptFg: sExc.fg,
+
+      setDark: () => this.setState({ theme: "dark" }), setLight: () => this.setState({ theme: "light" }),
+      darkBg: dark.bg, darkFg: dark.fg, lightBg: light.bg, lightFg: light.fg,
+      setRu: () => this.setState({ lang: "ru" }), setEn: () => this.setState({ lang: "en" }),
+      ruBg: ru.bg, ruFg: ru.fg, enBg: en.bg, enFg: en.fg,
+      toggleNotif: () => this.setState(s => ({ notif: !s.notif })),
+      notifTrack: st.notif ? ON : OFF,
+      notifKnob: st.notif ? "translateX(18px)" : "translateX(0)",
+    };
+  }
+}
+</script>
+</body>
+</html>

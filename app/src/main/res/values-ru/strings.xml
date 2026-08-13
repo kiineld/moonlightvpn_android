@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Onboarding -->
+    <string name="onboarding_title">Интернет\nбез границ</string>
+    <string name="onboarding_subtitle">Подключение в одно касание. Подписка из бота или личного кабинета работает здесь без настроек.</string>
+    <string name="onboarding_feature_tap_title">Одно касание</string>
+    <string name="onboarding_feature_tap_sub">Автовыбор ближайшего узла</string>
+    <string name="onboarding_feature_devices_title">До 5 устройств</string>
+    <string name="onboarding_feature_devices_sub">Одна подписка на телефон, планшет и ноутбук</string>
+    <string name="onboarding_feature_reality_title">VLESS Reality</string>
+    <string name="onboarding_feature_reality_sub">Ключи хранятся только на устройстве</string>
+    <string name="onboarding_add_subscription">Добавить подписку</string>
+    <string name="onboarding_later">Позже</string>
+
+    <!-- Import -->
+    <string name="import_title">Подписка</string>
+    <string name="import_hint">Отсканируйте QR-код из бота или личного кабинета — либо вставьте ссылку подписки.</string>
+    <string name="import_camera_hint">наведите камеру на QR-код</string>
+    <string name="import_camera_permission">Разрешите доступ к камере, чтобы отсканировать QR-код</string>
+    <string name="import_grant_camera">Разрешить камеру</string>
+    <string name="import_paste">Вставить из буфера</string>
+    <string name="import_or_manually">ИЛИ ВРУЧНУЮ</string>
+    <string name="import_url_placeholder">https://sub.moonlight.vpn/…</string>
+    <string name="import_add">Добавить</string>
+    <string name="import_telegram_title">Открыть Telegram-бота</string>
+    <string name="import_telegram_sub">Ссылка придёт в чат и добавится сама</string>
+    <string name="import_success_title">Подписка добавлена:</string>
+    <string name="import_success_connect">Подключиться</string>
+    <string name="import_servers_count">%1$d серверов</string>
+    <string name="import_error_clipboard">В буфере нет ссылки подписки</string>
+    <string name="import_error_invalid">Это не похоже на ссылку подписки</string>
+    <string name="import_error_network">Сервер недоступен. Проверьте соединение.</string>
+    <string name="import_error_not_found">Подписка не найдена. Проверьте ссылку.</string>
+    <string name="import_error_unauthorized">Эта подписка неактивна</string>
+    <string name="import_error_device_limit">Достигнут лимит устройств для этой подписки</string>
+    <string name="import_error_no_nodes">В подписке нет серверов</string>
+
+    <!-- Connect -->
+    <string name="connect_refresh">Обновить</string>
+    <string name="connect_refresh_subscription">Обновить</string>
+    <string name="connect_refreshing">Обновление</string>
+    <string name="connect_status_protected">Защищено</string>
+    <string name="connect_status_disconnected">Не защищено</string>
+    <string name="connect_status_connecting">Подключение</string>
+    <string name="connect_status_reconnecting">Переподключение</string>
+    <string name="connect_status_error">Ошибка</string>
+    <string name="connect_big_connected">Подключено</string>
+    <string name="connect_big_connect">Отключено</string>
+    <string name="connect_big_connecting">Соединение</string>
+    <string name="connect_hint_tap_disconnect">нажмите, чтобы отключить</string>
+    <string name="connect_hint_tap_connect">нажмите, чтобы подключиться</string>
+    <string name="connect_hint_connecting">поднимаем туннель…</string>
+    <string name="connect_stat_session">ЗА СЕССИЮ</string>
+    <string name="connect_stat_remaining">ОСТАЛОСЬ</string>
+    <string name="connect_auto">Авто</string>
+    <string name="connect_ping">Пинг</string>
+    <string name="connect_pinging">Замер…</string>
+    <string name="connect_auto_prefix">Авто · %1$s</string>
+    <string name="connect_no_subscription">Подписки пока нет</string>
+    <string name="connect_no_subscription_sub">Добавьте её, чтобы начать</string>
+    <string name="connect_measuring">замер…</string>
+    <string name="connect_latency_ms">%1$d ms</string>
+
+    <!-- Connection errors -->
+    <string name="error_no_subscription">Сначала добавьте подписку</string>
+    <string name="error_no_nodes">В этой подписке нет серверов</string>
+    <string name="error_permission_denied">Разрешение на VPN не выдано</string>
+    <string name="error_subscription_expired">Срок подписки истёк</string>
+    <string name="error_traffic_exhausted">Трафик закончился</string>
+    <string name="error_device_limit">Достигнут лимит устройств</string>
+    <string name="error_core_start_failed">Не удалось запустить ядро</string>
+    <string name="error_tunnel_start_failed">Не удалось поднять туннель</string>
+    <string name="error_network">Сеть недоступна</string>
+    <string name="error_unknown">Что-то пошло не так</string>
+
+    <!-- Subscription -->
+    <string name="subscription_title">Подписка</string>
+    <string name="subscription_plan">Тариф</string>
+    <string name="subscription_plan_fallback">Moonlight</string>
+    <string name="subscription_active">Активна</string>
+    <string name="subscription_expired">Истекла</string>
+    <string name="subscription_label_remaining">ОСТАЛОСЬ</string>
+    <string name="subscription_label_traffic">ТРАФИК</string>
+    <string name="subscription_label_devices">УСТРОЙСТВА</string>
+    <string name="subscription_traffic_of">%1$s из %2$s</string>
+    <string name="subscription_traffic_unlimited">Без лимита</string>
+    <string name="subscription_valid_until">действует до %1$s</string>
+    <string name="subscription_link">ССЫЛКА ПОДПИСКИ</string>
+    <string name="subscription_copied">Ссылка скопирована</string>
+    <string name="subscription_refresh">Обновить подписку</string>
+    <string name="subscription_refresh_sub">Проверить серверы, дни и трафик</string>
+    <string name="subscription_refresh_running">Синхронизация с сервером…</string>
+    <string name="subscription_refresh_done">Обновлено только что</string>
+    <string name="subscription_refresh_failed">Не удалось обновить</string>
+    <string name="subscription_extend">Продлить подписку</string>
+    <string name="subscription_extend_sub">Оплата в боте или кабинете</string>
+    <string name="subscription_add">Добавить подписку</string>
+    <string name="subscription_add_sub">QR-код или ссылка</string>
+    <string name="subscription_empty_title">Подписки нет</string>
+    <string name="subscription_empty_sub">Добавьте её из бота или кабинета</string>
+    <string name="subscription_unknown">—</string>
+    <!-- Shown where the panel reports no cap (total=0 / expire=0), as opposed to
+         reporting nothing at all, which stays an em dash. -->
+    <string name="subscription_unlimited_short" translatable="false">∞</string>
+
+    <string name="subscription_delete">Удалить подписку</string>
+    <string name="subscription_delete_sub">Удалит серверы и ключи с этого устройства</string>
+    <string name="subscription_delete_confirm">Удалить подписку?</string>
+    <string name="subscription_delete_confirm_body">Туннель отключится, а список серверов будет удалён с этого устройства. Сама подписка не отменяется — её можно добавить снова по той же ссылке.</string>
+    <string name="action_cancel">Отмена</string>
+    <string name="action_delete">Удалить</string>
+
+    <!-- Settings -->
+    <string name="settings_title">Настройки</string>
+    <string name="settings_section_connection">ПОДКЛЮЧЕНИЕ</string>
+    <string name="settings_split">Раздельное туннелирование</string>
+    <string name="settings_section_app">ПРИЛОЖЕНИЕ</string>
+    <string name="settings_theme">Тема</string>
+    <string name="settings_theme_dark">Тёмная</string>
+    <string name="settings_theme_light">Светлая</string>
+    <string name="settings_language">Язык</string>
+    <string name="settings_notifications">Уведомления</string>
+    <string name="settings_notifications_sub">Об окончании подписки и трафика</string>
+    <string name="settings_section_support">ПОДДЕРЖКА</string>
+    <string name="settings_channel">Наш канал</string>
+    <string name="settings_channel_sub">Новости и обновления</string>
+    <string name="settings_support">Поддержка</string>
+    <string name="settings_support_sub">Мы на связи 24/7</string>
+    <string name="settings_about">О приложении</string>
+    <string name="settings_about_sub">Версия %1$s · показать приветствие</string>
+    <string name="settings_core_version">Xray-core %1$s</string>
+
+    <!-- Split tunnelling -->
+    <string name="split_title">Приложения</string>
+    <string name="split_mode_all">Весь трафик</string>
+    <string name="split_mode_only">Только эти</string>
+    <string name="split_mode_except">Кроме этих</string>
+    <string name="split_hint_all">Через туннель идёт весь трафик устройства.</string>
+    <string name="split_hint_only">Через туннель пойдут только отмеченные приложения — остальные напрямую.</string>
+    <string name="split_hint_except">Отмеченные приложения пойдут напрямую, весь остальной трафик — через туннель.</string>
+    <string name="split_summary_all">Весь трафик</string>
+    <string name="split_loading">Загружаем приложения…</string>
+
+    <string name="logs_title">Логи</string>
+    <string name="logs_subtitle">Диагностика для поддержки</string>
+    <string name="logs_hint">Логи приложения и Xray-core. Ссылки подписки, ключи и UUID удаляются перед отправкой.</string>
+    <string name="logs_verbose">Подробный лог ядра</string>
+    <string name="logs_verbose_sub">Уровень debug — также записывает адреса подключений</string>
+    <string name="logs_share">Отправить логи</string>
+    <string name="logs_empty">Пока ничего не записано</string>
+
+    <string name="logs_source_app">Приложение</string>
+    <string name="logs_source_core">Xray-core</string>
+    <string name="logs_empty_core">Ядро пока ничего не записало.\nПодключитесь один раз и вернитесь.</string>
+
+    <string name="split_search_hint">Поиск приложений</string>
+    <string name="split_no_matches">Ничего не найдено по «%1$s»</string>
+
+    <!-- Navigation -->
+    <string name="nav_connect">Подключение</string>
+    <string name="nav_subscription">Подписка</string>
+    <string name="nav_settings">Настройки</string>
+    <string name="action_back">Назад</string>
+
+    <plurals name="days_remaining">
+        <item quantity="one">%1$d день</item>
+        <item quantity="few">%1$d дня</item>
+        <item quantity="many">%1$d дней</item>
+        <item quantity="other">%1$d дня</item>
+    </plurals>
+    <plurals name="alert_expiring">
+        <item quantity="one">Подписка закончится через %1$d день.</item>
+        <item quantity="few">Подписка закончится через %1$d дня.</item>
+        <item quantity="many">Подписка закончится через %1$d дней.</item>
+        <item quantity="other">Подписка закончится через %1$d дня.</item>
+    </plurals>
+    <plurals name="apps_selected">
+        <item quantity="one">%1$d прил.</item>
+        <item quantity="few">%1$d прил.</item>
+        <item quantity="many">%1$d прил.</item>
+        <item quantity="other">%1$d прил.</item>
+    </plurals>
+
+    <string name="alert_channel_name">Уведомления о подписке</string>
+    <string name="alert_channel_description">Предупреждает, когда подписка или трафик заканчиваются</string>
+    <string name="alert_expired">Срок подписки истёк. Продлите её, чтобы подключаться.</string>
+    <string name="alert_traffic_low">Использовано более 90% трафика.</string>
+
+    <string name="split_summary_format">%1$s · %2$s</string>
+
+    <string name="unit_bytes">Б</string>
+    <string name="unit_kilobytes">КБ</string>
+    <string name="unit_megabytes">МБ</string>
+    <string name="unit_gigabytes">ГБ</string>
+    <string name="unit_terabytes">ТБ</string>
+</resources>

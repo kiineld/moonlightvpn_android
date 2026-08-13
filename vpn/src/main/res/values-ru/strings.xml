@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="ml_notification_channel_name">VPN-подключение</string>
+    <string name="ml_notification_channel_description">Показывает состояние туннеля, пока Moonlight подключён</string>
+    <string name="ml_notification_title">Moonlight</string>
+    <string name="ml_notification_connected">Подключено к %1$s</string>
+    <string name="ml_notification_connecting">Подключение…</string>
+    <string name="ml_notification_disconnect">Отключить</string>
+    <string name="ml_tile_connected">Защищено</string>
+    <string name="ml_tile_disconnected">Выключен</string>
+    <string name="ml_tile_error">Ошибка</string>
+</resources>
