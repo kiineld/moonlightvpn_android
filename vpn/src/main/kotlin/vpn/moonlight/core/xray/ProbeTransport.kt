@@ -3,6 +3,10 @@ package vpn.moonlight.core.xray
 import java.net.InetSocketAddress
 import java.net.Proxy
 import java.util.concurrent.TimeUnit
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.job
+import kotlinx.coroutines.withContext
+import kotlin.coroutines.coroutineContext
 import okhttp3.ConnectionPool
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -50,21 +54,35 @@ class OkHttpProbeTransport(
 
         val request = Request.Builder().url(url).head().build()
 
-        return try {
-            // Warm-up: pays the handshakes, result discarded.
-            client.newCall(request).execute().close()
+        // execute() blocks in a socket read, which thread interruption does not
+        // unblock, so cancellation has to reach the call itself. Without this a
+        // connect that interrupts a pass still waits out the probe timeout.
+        val onCancel = coroutineContext.job.invokeOnCompletion {
+            runCatching { client.dispatcher.cancelAll() }
+        }
 
-            var best: Long? = null
-            repeat(timedAttempts) {
-                val startedAt = System.nanoTime()
+        return try {
+            withContext(Dispatchers.IO) {
+                // Warm-up: pays the handshakes, result discarded.
                 client.newCall(request).execute().close()
-                val elapsed = (System.nanoTime() - startedAt) / 1_000_000
-                if (best == null || elapsed < best!!) best = elapsed
+
+                var best: Long? = null
+                repeat(timedAttempts) {
+                    val startedAt = System.nanoTime()
+                    client.newCall(request).execute().close()
+                    val elapsed = (System.nanoTime() - startedAt) / 1_000_000
+                    if (best == null || elapsed < best!!) best = elapsed
+                }
+                best
             }
-            best
+        } catch (cancelled: kotlinx.coroutines.CancellationException) {
+            // Not a failed measurement: the pass is standing down for the tunnel,
+            // and reporting "unreachable" here would mark a node we never measured.
+            throw cancelled
         } catch (e: Exception) {
             null
         } finally {
+            onCancel.dispose()
             runCatching {
                 client.dispatcher.executorService.shutdown()
                 client.connectionPool.evictAll()

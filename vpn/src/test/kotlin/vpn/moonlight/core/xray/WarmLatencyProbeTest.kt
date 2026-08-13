@@ -1,5 +1,8 @@
 package vpn.moonlight.core.xray
 
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -16,7 +19,7 @@ class WarmLatencyProbeTest {
     fun releaseClaim() = XrayCoreOwner.releaseTunnelClaim()
 
     /** Records the order of core calls so start/stop pairing can be asserted. */
-    private class RecordingCore(private var running: Boolean = false) : XrayCore {
+    private open class RecordingCore(protected var running: Boolean = false) : XrayCore {
         val calls = mutableListOf<String>()
 
         override fun version() = "26.7.28"
@@ -62,8 +65,77 @@ class WarmLatencyProbeTest {
 
         runTest { probe.measureAll(nodes(2)) }
 
-        assertEquals(listOf("stop", "start", "stop", "stop", "start", "stop"), core.calls)
+        // One batch, so one instance: the pairing is what matters, not the count.
+        assertEquals(listOf("stop", "start", "stop"), core.calls)
         assertFalse("the core must not be left running", core.isRunning())
+    }
+
+    @Test
+    fun `measures a batch of nodes in a single core instance`() {
+        val core = RecordingCore()
+        val latencies = LatencyRepository()
+        val probe = WarmLatencyProbe(core, latencies, FixedTransport(21))
+
+        runTest { probe.measureAll(nodes(6)) }
+
+        assertEquals("six nodes should cost one start", 1, core.calls.count { it == "start" })
+        (1..6).forEach { assertEquals(Latency.Value(21), latencies.latencyOf("n$it")) }
+    }
+
+    @Test
+    fun `splits a large subscription into batches`() {
+        val core = RecordingCore()
+        val probe = WarmLatencyProbe(core, LatencyRepository(), FixedTransport(10), batchSize = 4)
+
+        runTest { probe.measureAll(nodes(10)) }
+
+        assertEquals(3, core.calls.count { it == "start" })
+    }
+
+    @Test
+    fun `falls back to one node at a time when the batch is rejected`() {
+        // A merged config the core will not take must not cost the whole batch
+        // its measurements.
+        val core = object : RecordingCore() {
+            override fun start(configJson: String): Result<Unit> {
+                calls += "start"
+                // Reject only the merged config, which carries several inbounds.
+                if (configJson.contains("p1_in")) return Result.failure(XrayException("rejected"))
+                running = true
+                return Result.success(Unit)
+            }
+        }
+        val latencies = LatencyRepository()
+
+        runTest { WarmLatencyProbe(core, latencies, FixedTransport(33)).measureAll(nodes(3)) }
+
+        (1..3).forEach { assertEquals(Latency.Value(33), latencies.latencyOf("n$it")) }
+    }
+
+    @Test
+    fun `a connect interrupts a pass instead of queuing behind it`() = runTest {
+        // The complaint this fixes: tapping connect during a pass did nothing for
+        // seconds, because the tunnel waited out the node being measured.
+        val core = RecordingCore()
+        val reached = CompletableDeferred<Unit>()
+        val transport = object : ProbeTransport {
+            override suspend fun warmRoundTripMs(socksPort: Int): Long? {
+                reached.complete(Unit)
+                awaitCancellation()
+            }
+        }
+
+        val pass = async { WarmLatencyProbe(core, LatencyRepository(), transport).measureAll(nodes(3)) }
+        reached.await()
+        XrayCoreOwner.claimForTunnel()
+
+        val result = pass.await()
+        assertTrue(result.isFailure)
+        assertEquals(
+            ProbeRefusal.TunnelActive,
+            (result.exceptionOrNull() as ProbeRefusedException).reason,
+        )
+        assertFalse("the core must be released for the tunnel", core.isRunning())
     }
 
     @Test

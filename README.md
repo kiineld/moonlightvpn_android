@@ -197,12 +197,27 @@ number about handshake cost, not about the latency you experience once connected
 It also caps a batch at 5 configs and fails an oversized batch whole.
 
 `WarmLatencyProbe` measures differently: one throwaway request establishes the
-connection, then two timed requests reuse it and the lower is reported. Because
-libXray keeps a single global core (`RunXray` returns `ErrAlreadyRunning`), each
-node runs in its own short-lived instance, sequentially, and a full pass is only
-possible while the tunnel is down. While it is up, only the active node is
-measured — through the live SOCKS port, which this app can reach because it
-excludes itself from its own tunnel.
+connection, then two timed requests reuse it and the lower is reported.
+
+libXray keeps a single global core (`RunXray` returns `ErrAlreadyRunning`), so
+the core — not the network — is what makes a pass slow. Nodes are therefore
+measured in batches of 8 **through one instance**: each node gets its own SOCKS
+inbound, and a routing rule pins that inbound to that node's own outbound or
+balancer, so the measurements run concurrently. Every tag is namespaced per node
+(`p3_proxy`), because panel configs reuse `proxy`/`direct`/`block` and an
+unprefixed merge would route one node's probe through another's outbound —
+a wrong number rather than an obvious error. Balancer selectors and the
+observatory's subject selector are prefix matchers over those tags, so they take
+the same prefix. A config that cannot be merged falls back to its own instance.
+
+A full pass is only possible while the tunnel is down. While it is up, only the
+active node is measured — through the live SOCKS port, which this app can reach
+because it excludes itself from its own tunnel.
+
+Connecting **interrupts** a pass rather than queuing behind it: `claimForTunnel`
+cancels the pass and its in-flight requests, so the tunnel waits for a core stop
+rather than for the node being measured, which for an unreachable node meant the
+full probe timeout.
 
 Probe configs are stripped to outbounds, balancers and the observatory, with DNS
 and geo rules dropped, so two dozen short-lived instances do not each re-parse

@@ -1,6 +1,7 @@
 package vpn.moonlight.core.xray
 
 import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicReference
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
@@ -10,24 +11,38 @@ import kotlinx.coroutines.sync.withLock
  * libXray keeps a single global core per process — a second `runXrayFromJson`
  * fails with "xray is already running". Two callers want it: the tunnel, which
  * holds it for the whole session, and the latency probe, which takes it for a
- * second at a time per node. Without arbitration they collide, and the loser
- * reports a failure the user cannot act on.
+ * second at a time.
  *
  * Rules:
  *  - every start/stop happens inside [exclusive], so they cannot interleave;
- *  - the tunnel announces itself with [claimForTunnel] before queuing, and the
- *    probe checks [isTunnelClaiming] between nodes and stands down — so a connect
- *    waits for at most the node being measured, not the whole pass.
+ *  - the tunnel announces itself with [claimForTunnel], which **interrupts** an
+ *    in-flight measurement rather than queuing behind it.
+ *
+ * The interrupt matters. Checking a flag between nodes still makes a connect wait
+ * out the node being measured, and an unreachable node takes the full probe
+ * timeout — so tapping connect during a pass appeared to do nothing for seconds.
+ * Cancelling the pass outright costs only the core stop.
  */
 object XrayCoreOwner {
 
     private val lock = Mutex()
     private val tunnelClaiming = AtomicBoolean(false)
+    private val standDown = AtomicReference<(() -> Unit)?>(null)
 
     /** True while a connect is starting or a tunnel is up. */
     val isTunnelClaiming: Boolean get() = tunnelClaiming.get()
 
-    fun claimForTunnel() = tunnelClaiming.set(true)
+    /**
+     * Registers how to interrupt the current latency pass, or clears it with null.
+     * Only one pass runs at a time, so a single slot is enough.
+     */
+    fun onTunnelClaim(handler: (() -> Unit)?) = standDown.set(handler)
+
+    fun claimForTunnel() {
+        tunnelClaiming.set(true)
+        // Taken, not read, so a pass is interrupted exactly once.
+        standDown.getAndSet(null)?.invoke()
+    }
 
     fun releaseTunnelClaim() = tunnelClaiming.set(false)
 
