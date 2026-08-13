@@ -217,6 +217,31 @@ switch would have no strings for the other one.
 - **APK size.** `libgojni.so` is ~50 MB per ABI, so release builds are split per
   ABI (`splits.abi`); a device downloads ~42 MB rather than 123 MB.
 
+## Deep links
+
+The app registers the `moonlight://` scheme, so a bot or web page can hand it a
+subscription or toggle the tunnel:
+
+| Link | Effect |
+|---|---|
+| `moonlight://import?url=<subscription url>` | Adds the subscription and shows the result |
+| `moonlight://import/<url-encoded subscription url>` | Same, url in the path |
+| `moonlight://connect` | Connects, asking for VPN consent on first run |
+| `moonlight://disconnect` | Disconnects |
+| `moonlight://open` | Opens the app |
+
+`sub`, `subscription` and `link` are accepted as aliases for `url`, and the
+value may be percent-encoded. Only `http`/`https` targets are accepted — a deep
+link must not be able to point the import flow at something that is not a
+subscription endpoint. A bare host gains `https://`.
+
+Import **submits automatically** rather than only filling the field, because the
+design promises a link from the bot "adds itself". The subscription screen shows
+what was added and can delete it.
+
+`https://` App Links for a panel domain are not registered; that needs a
+`assetlinks.json` hosted on the domain and is a deployment decision.
+
 ## Configuration
 
 `app/build.gradle.kts` `buildConfigField`s, not hardcoded literals:
