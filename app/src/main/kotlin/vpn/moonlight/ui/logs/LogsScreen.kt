@@ -54,8 +54,8 @@ fun LogsScreen(
     val state by viewModel.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
-    // Resolved here rather than inside the click lambda: reading resources through
-    // LocalContext is not observable, so it would not follow a language change.
+    // Resolved here rather than inside the click lambda: a composition local can
+    // only be read during composition, and this one has to follow the language.
     val shareLabel = stringResource(R.string.logs_share)
 
     Column(
@@ -118,12 +118,7 @@ fun LogsScreen(
                         val report = viewModel.buildReport(context)
                         val intent = LogExport.shareIntent(context, report)
                         runCatching {
-                            // NEW_TASK because LocalContext is a configuration
-                            // context (see WithAppLanguage), not the Activity.
-                            context.startActivity(
-                                Intent.createChooser(intent, shareLabel)
-                                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
-                            )
+                            context.startActivity(Intent.createChooser(intent, shareLabel))
                         }
                     }
                 },

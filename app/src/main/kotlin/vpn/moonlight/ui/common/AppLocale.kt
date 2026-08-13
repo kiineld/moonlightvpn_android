@@ -5,19 +5,20 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import vpn.moonlight.data.model.AppLanguage
 import vpn.moonlight.data.util.localizedFor
 
 /**
  * Renders [content] in the chosen language without restarting anything.
  *
- * `stringResource` reads its text from `LocalContext`'s resources and uses
- * `LocalConfiguration` to know when to invalidate, so overriding both is enough
- * to re-resolve every string on the next recomposition.
+ * `stringResource` resolves its text through `LocalResources`, so swapping that
+ * one local re-resolves every string on the next recomposition.
  *
- * Note that the provided context is a configuration context, not the Activity.
- * Anything that needs to launch an activity from it must set
- * `FLAG_ACTIVITY_NEW_TASK`.
+ * `LocalContext` is deliberately left alone. It must keep pointing at the
+ * Activity: `rememberLauncherForActivityResult` and friends walk up from it to
+ * find the `ActivityResultRegistryOwner`, and a configuration context is not in
+ * that chain, so providing one made the first composition throw.
  */
 @Composable
 fun WithAppLanguage(language: AppLanguage, content: @Composable () -> Unit) {
@@ -29,7 +30,7 @@ fun WithAppLanguage(language: AppLanguage, content: @Composable () -> Unit) {
     }
 
     CompositionLocalProvider(
-        LocalContext provides localized,
+        LocalResources provides localized.resources,
         LocalConfiguration provides localized.resources.configuration,
         content = content,
     )
