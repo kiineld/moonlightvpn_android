@@ -75,6 +75,7 @@ import vpn.moonlight.design.components.MlPrimaryButton
 import vpn.moonlight.design.components.MlText
 import vpn.moonlight.design.ml
 import vpn.moonlight.ui.common.byteText
+import vpn.moonlight.ui.common.serversCountText
 import vpn.moonlight.ui.common.daysText
 
 @Composable
@@ -165,7 +166,7 @@ private fun ImportSuccess(state: ImportUiState, onConnect: () -> Unit) {
 
         Spacer(Modifier.height(14.dp))
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            InfoChip(stringResource(R.string.import_servers_count, subscription.nodes.size))
+            InfoChip(serversCountText(subscription.nodes.size))
             info?.totalBytes?.takeIf { it > 0 }?.let { InfoChip(byteText(it)) }
         }
 

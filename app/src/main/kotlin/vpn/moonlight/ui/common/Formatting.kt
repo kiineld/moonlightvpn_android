@@ -65,6 +65,11 @@ fun appsCountText(count: Int): String = pluralStringResource(R.plurals.apps_sele
 
 @Composable
 @ReadOnlyComposable
+fun serversCountText(count: Int): String =
+    pluralStringResource(R.plurals.import_servers_count, count, count)
+
+@Composable
+@ReadOnlyComposable
 fun dateText(epochSeconds: Long): String {
     val formatter = DateTimeFormatter
         .ofLocalizedDate(FormatStyle.LONG)

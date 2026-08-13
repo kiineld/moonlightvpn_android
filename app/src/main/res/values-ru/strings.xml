@@ -26,7 +26,12 @@
     <string name="import_telegram_sub">Ссылка придёт в чат и добавится сама</string>
     <string name="import_success_title">Подписка добавлена:</string>
     <string name="import_success_connect">Подключиться</string>
-    <string name="import_servers_count">%1$d серверов</string>
+    <plurals name="import_servers_count">
+        <item quantity="one">%1$d сервер</item>
+        <item quantity="few">%1$d сервера</item>
+        <item quantity="many">%1$d серверов</item>
+        <item quantity="other">%1$d сервера</item>
+    </plurals>
     <string name="import_error_clipboard">В буфере нет ссылки подписки</string>
     <string name="import_error_invalid">Это не похоже на ссылку подписки</string>
     <string name="import_error_network">Сервер недоступен. Проверьте соединение.</string>

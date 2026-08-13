@@ -29,7 +29,10 @@
     <string name="import_telegram_sub">The link arrives in chat and adds itself</string>
     <string name="import_success_title">Subscription added:</string>
     <string name="import_success_connect">Connect</string>
-    <string name="import_servers_count">%1$d servers</string>
+    <plurals name="import_servers_count">
+        <item quantity="one">%1$d server</item>
+        <item quantity="other">%1$d servers</item>
+    </plurals>
     <string name="import_error_clipboard">No subscription link on the clipboard</string>
     <string name="import_error_invalid">That does not look like a subscription link</string>
     <string name="import_error_network">Could not reach the server. Check your connection.</string>
