@@ -36,6 +36,14 @@ class MoonlightApplication : Application(), TunnelDependenciesProvider {
         SubscriptionAlerts.schedule(this)
 
         scope.launch {
+            // Mirrors the theme so the next activity can colour its window before
+            // the first frame, which is what removes the flash on a language change.
+            container.settingsStore.settings.collect { settings ->
+                container.themeStartupCache.theme = settings.theme
+            }
+        }
+
+        scope.launch {
             // ~24 MB of geodata, copied off the main thread. Only has to finish
             // before a config is loaded, not before the environment is set.
             XrayAssets.extract(this@MoonlightApplication)

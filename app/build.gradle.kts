@@ -13,8 +13,10 @@ android {
         applicationId = "vpn.moonlight"
         minSdk = 26
         targetSdk = 36
-        versionCode = 1
-        versionName = "1.0.4"
+        // Overridden by the release workflow from the git tag, so a published
+        // build can never disagree with the tag it was cut from.
+        versionName = (project.findProperty("moonlightVersionName") as String?) ?: "1.0.6"
+        versionCode = (project.findProperty("moonlightVersionCode") as String?)?.toInt() ?: 10006
 
         // The panel these subscriptions live on. Override per flavour/build.
         buildConfigField("String", "DEFAULT_PANEL_HOST", "\"sub.moonlight.vpn\"")

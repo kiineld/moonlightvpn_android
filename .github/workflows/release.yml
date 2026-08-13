@@ -43,6 +43,16 @@ jobs:
       - name: Run the tests before shipping anything
         run: ./gradlew testDebugUnitTest lintDebug
 
+      - name: Derive the version from the tag
+        # major.minor.patch -> 10203, which stays monotonic across releases.
+        run: |
+          name="${GITHUB_REF_NAME#v}"
+          IFS=. read -r major minor patch <<< "$name"
+          code=$(( major * 10000 + minor * 100 + patch ))
+          echo "VERSION_NAME=$name" >> "$GITHUB_ENV"
+          echo "VERSION_CODE=$code" >> "$GITHUB_ENV"
+          echo "building $name ($code)"
+
       - name: Check the signing key is configured
         # Fails before doing any work rather than publishing something unsigned or
         # signed with a key that is not private. See scripts/setup-signing.sh.
@@ -64,11 +74,13 @@ jobs:
           keystore="$RUNNER_TEMP/release.keystore"
           printf '%s' "$KEYSTORE_BASE64" | base64 -d > "$keystore"
           export MOONLIGHT_KEYSTORE="$keystore"
-          ./gradlew assembleRelease -PuniversalApk
+          ./gradlew assembleRelease -PuniversalApk \
+            -PmoonlightVersionName="$VERSION_NAME" \
+            -PmoonlightVersionCode="$VERSION_CODE"
           # The key does not outlive the step.
           shred -u "$keystore" 2>/dev/null || rm -f "$keystore"
 
-      - name: Verify every artifact is actually signed
+      - name: Verify every artifact is actually signed and versioned
         run: |
           buildtools=$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -1)
           for apk in app/build/outputs/apk/release/*.apk; do
@@ -76,6 +88,11 @@ jobs:
               || { echo "::error::$apk is not signed"; exit 1; }
           done
           echo "all release APKs are signed"
+          reported=$("$buildtools/aapt2" dump badging app/build/outputs/apk/release/app-universal-release.apk \
+            | sed -n "s/.*versionName='\([^']*\)'.*/\1/p")
+          [ "$reported" = "$VERSION_NAME" ] \
+            || { echo "::error::APK says $reported but the tag says $VERSION_NAME"; exit 1; }
+          echo "version matches the tag: $reported"
 
       - name: Name the artifacts for a stable download URL
         run: |

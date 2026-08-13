@@ -7,6 +7,7 @@ import vpn.moonlight.core.xray.WarmLatencyProbe
 import vpn.moonlight.core.xray.XrayCore
 import vpn.moonlight.data.local.DeviceIdentity
 import vpn.moonlight.data.local.SettingsStore
+import vpn.moonlight.data.local.ThemeStartupCache
 import vpn.moonlight.data.local.SubscriptionStore
 import vpn.moonlight.data.remote.SubscriptionApi
 import vpn.moonlight.data.repository.InstalledAppsRepository
@@ -23,6 +24,7 @@ import vpn.moonlight.data.repository.SubscriptionRepository
 class AppContainer(private val context: Context) {
 
     val settingsStore = SettingsStore(context)
+    val themeStartupCache = ThemeStartupCache(context)
     val deviceIdentity = DeviceIdentity(context, settingsStore)
     val installedApps = InstalledAppsRepository(context)
 

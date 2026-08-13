@@ -4,6 +4,8 @@ import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Build
 import android.content.Intent
+import android.content.res.Configuration
+import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
@@ -33,12 +35,17 @@ class MainActivity : AppCompatActivity() {
     private val deepLink = MutableStateFlow<DeepLink?>(null)
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        val container = (application as MoonlightApplication).container
+
+        // Before the first frame. Changing the language recreates the activity,
+        // and the system paints windowBackground during the gap — a fixed dark
+        // colour there is a black flash for anyone on the light theme.
+        applyWindowBackground(container.themeStartupCache.theme)
+
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         requestNotificationPermission()
         deepLink.value = DeepLinks.parse(intent?.dataString)
-
-        val container = (application as MoonlightApplication).container
 
         // Theme is read here rather than inside the tree so the very first
         // composition already has the right palette and nothing flashes.
@@ -70,6 +77,19 @@ class MainActivity : AppCompatActivity() {
         deepLink.value = DeepLinks.parse(intent.dataString)
     }
 
+    private fun applyWindowBackground(theme: ThemeMode) {
+        val dark = when (theme) {
+            ThemeMode.Dark -> true
+            ThemeMode.Light -> false
+            ThemeMode.System ->
+                resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK ==
+                    Configuration.UI_MODE_NIGHT_YES
+        }
+        window.setBackgroundDrawable(
+            ColorDrawable(if (dark) WINDOW_DARK else WINDOW_LIGHT),
+        )
+    }
+
     /**
      * Asked for at launch, not when connecting.
      *
@@ -84,5 +104,11 @@ class MainActivity : AppCompatActivity() {
             Manifest.permission.POST_NOTIFICATIONS,
         ) == PackageManager.PERMISSION_GRANTED
         if (!granted) notificationPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
+    }
+
+    private companion object {
+        // MoonlightDarkColors.bg and MoonlightLightColors.bg.
+        const val WINDOW_DARK = 0xFF101828.toInt()
+        const val WINDOW_LIGHT = 0xFFF2F3ED.toInt()
     }
 }
