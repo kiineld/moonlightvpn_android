@@ -21,12 +21,15 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import java.io.File
+import kotlinx.coroutines.launch
 import vpn.moonlight.BuildConfig
 import vpn.moonlight.R
 import vpn.moonlight.data.model.AppLanguage
@@ -45,6 +48,7 @@ import vpn.moonlight.design.components.MlText
 import vpn.moonlight.design.MlIcon
 import vpn.moonlight.design.ml
 import vpn.moonlight.ui.common.appsCountText
+import vpn.moonlight.update.ApkInstaller
 
 @Composable
 fun SettingsScreen(
@@ -55,8 +59,16 @@ fun SettingsScreen(
     modifier: Modifier = Modifier,
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val updateState by viewModel.updateState.collectAsStateWithLifecycle()
     val context = LocalContext.current
     val coreVersion = remember { runCatching { viewModel.coreVersion() }.getOrDefault("—") }
+
+    // Copying tens of megabytes into an install session would block the frame,
+    // so it runs off the main thread. The system takes over from the commit:
+    // it shows the confirmation, and offers to allow this app as an install
+    // source when it is not one yet.
+    val scope = rememberCoroutineScope()
+    val install: (File) -> Unit = { file -> scope.launch { ApkInstaller.install(context, file) } }
 
     // Turning alerts on is meaningless without POST_NOTIFICATIONS on API 33+, so
     // ask at the moment the user opts in rather than up front.
@@ -177,6 +189,14 @@ fun SettingsScreen(
                         onClick = onOpenLogs,
                         icon = MlIcons.Activity,
                         tileFill = ml.colors.cat3,
+                    )
+                    MlDivider(insetStart = 72.dp)
+                    UpdateRow(
+                        state = updateState,
+                        currentVersion = BuildConfig.VERSION_NAME,
+                        onCheck = viewModel::checkForUpdate,
+                        onDownload = viewModel::downloadUpdate,
+                        onInstall = install,
                     )
                     MlDivider(insetStart = 72.dp)
                     MlNavRow(

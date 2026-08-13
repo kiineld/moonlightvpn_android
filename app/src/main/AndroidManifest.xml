@@ -7,6 +7,11 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.CAMERA" />
 
+    <!-- The in-app updater installs an APK it downloaded from the project's
+         GitHub releases. Play restricts this permission, and Moonlight is
+         distributed outside Play; a Play build would drop the updater with it. -->
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
+
     <!-- Split tunnelling has to show every app that can use the network, which a
          <queries> declaration cannot express: the set is "all packages holding
          INTERNET", not a list of known packages or intents. This is the
@@ -69,5 +74,11 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/file_paths" />
         </provider>
+
+        <!-- Where the package installer reports on an update session, including
+             the "ask the user to confirm" step. -->
+        <receiver
+            android:name=".update.InstallResultReceiver"
+            android:exported="false" />
     </application>
 </manifest>

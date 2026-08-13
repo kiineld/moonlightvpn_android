@@ -24,6 +24,8 @@ android {
         buildConfigField("String", "TELEGRAM_CHANNEL_URL", "\"https://t.me/moonlight_vpn_channel\"")
         buildConfigField("String", "SUPPORT_URL", "\"https://t.me/moonlight_support\"")
         buildConfigField("String", "CABINET_URL", "\"https://cabinetofficial.rustafield.site\"")
+        // Where the in-app updater looks for releases.
+        buildConfigField("String", "GITHUB_REPO", "\"kiineld/moonlightvpn_android\"")
     }
 
     // A ~50 MB libgojni.so per ABI makes a universal APK unreasonable, so

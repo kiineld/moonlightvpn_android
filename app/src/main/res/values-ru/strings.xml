@@ -193,4 +193,22 @@
     <string name="unit_megabytes">МБ</string>
     <string name="unit_gigabytes">ГБ</string>
     <string name="unit_terabytes">ТБ</string>
+
+    <!-- In-app updater -->
+    <string name="update_title">Обновление</string>
+    <string name="update_idle">Версия %1$s · проверить обновления</string>
+    <string name="update_checking">Проверяем…</string>
+    <string name="update_current">Версия %1$s — последняя</string>
+    <string name="update_available">Доступна версия %1$s · %2$s</string>
+    <string name="update_downloading">Загружаем… %1$d%%</string>
+    <string name="update_ready">Версия %1$s готова к установке</string>
+    <string name="update_action_check">Проверить</string>
+    <string name="update_action_download">Скачать</string>
+    <string name="update_action_install">Установить</string>
+    <string name="update_action_retry">Ещё раз</string>
+    <string name="update_error_network">Не удалось связаться с GitHub. Проверьте соединение.</string>
+    <string name="update_error_no_release">Пока нечего устанавливать.</string>
+    <string name="update_error_storage">Не хватает места для загрузки.</string>
+    <string name="update_error_signature">Файл подписан другим ключом и был удалён.</string>
+    <string name="update_install_blocked">Разрешите Moonlight устанавливать приложения и нажмите «Установить» ещё раз.</string>
 </resources>

@@ -189,4 +189,22 @@
     <string name="unit_megabytes">MB</string>
     <string name="unit_gigabytes">GB</string>
     <string name="unit_terabytes">TB</string>
+
+    <!-- In-app updater -->
+    <string name="update_title">Update</string>
+    <string name="update_idle">Version %1$s · check for updates</string>
+    <string name="update_checking">Checking…</string>
+    <string name="update_current">Version %1$s is the latest</string>
+    <string name="update_available">Version %1$s available · %2$s</string>
+    <string name="update_downloading">Downloading… %1$d%%</string>
+    <string name="update_ready">Version %1$s is ready to install</string>
+    <string name="update_action_check">Check</string>
+    <string name="update_action_download">Download</string>
+    <string name="update_action_install">Install</string>
+    <string name="update_action_retry">Retry</string>
+    <string name="update_error_network">Could not reach GitHub. Check your connection.</string>
+    <string name="update_error_no_release">No release to install yet.</string>
+    <string name="update_error_storage">Not enough space to save the update.</string>
+    <string name="update_error_signature">The download is signed by a different key and was discarded.</string>
+    <string name="update_install_blocked">Allow Moonlight to install apps, then tap Install again.</string>
 </resources>

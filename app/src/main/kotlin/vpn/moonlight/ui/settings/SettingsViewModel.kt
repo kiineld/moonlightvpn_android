@@ -15,6 +15,8 @@ import vpn.moonlight.data.model.AppLanguage
 import vpn.moonlight.data.model.AppSettings
 import vpn.moonlight.data.model.SplitMode
 import vpn.moonlight.data.model.ThemeMode
+import vpn.moonlight.data.remote.AppRelease
+import vpn.moonlight.data.repository.UpdateState
 
 data class SettingsUiState(
     val settings: AppSettings = AppSettings(),
@@ -69,6 +71,20 @@ class SettingsViewModel(private val container: AppContainer) : ViewModel() {
     }
 
     fun coreVersion(): String = container.xrayCore.version()
+
+    val updateState: StateFlow<UpdateState> = container.updateRepository.state
+
+    fun checkForUpdate() {
+        viewModelScope.launch { container.updateRepository.check() }
+    }
+
+    fun downloadUpdate(release: AppRelease) {
+        viewModelScope.launch { container.updateRepository.download(release) }
+    }
+
+    fun dismissUpdate() {
+        container.updateRepository.reset()
+    }
 
     companion object {
         fun factory(container: AppContainer): ViewModelProvider.Factory = viewModelFactory {

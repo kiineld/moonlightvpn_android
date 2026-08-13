@@ -264,6 +264,10 @@ switch would have no strings for the other one.
   declares `specialUse` with a `PROPERTY_SPECIAL_USE_FGS_SUBTYPE` explaining why.
 - **APK size.** `libgojni.so` is ~50 MB per ABI, so release builds are split per
   ABI (`splits.abi`); a device downloads ~42 MB rather than 123 MB.
+- **`REQUEST_INSTALL_PACKAGES`** is used by the in-app updater in Settings, which
+  installs a build downloaded from this repository's releases. Play restricts the
+  permission to app stores and file managers, so a Play build has to drop the
+  updater along with it.
 
 ## Deep links
 
