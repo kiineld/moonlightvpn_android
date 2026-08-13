@@ -1,6 +1,7 @@
 package vpn.moonlight.core
 
 import android.app.PendingIntent
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.pm.ServiceInfo
@@ -32,6 +33,7 @@ import vpn.moonlight.data.model.ConnectionError
 import vpn.moonlight.data.model.ConnectionState
 import vpn.moonlight.data.model.ServerNode
 import vpn.moonlight.data.util.SplitTunnelPolicy
+import vpn.moonlight.data.util.localizedFor
 import vpn.moonlight.data.util.SplitTunnelRules
 
 /**
@@ -56,6 +58,16 @@ class MoonlightVpnService : VpnService() {
     private var tunInterface: ParcelFileDescriptor? = null
     private var statsJob: Job? = null
     private var notifications: VpnNotifications? = null
+
+    /**
+     * Resources in the language chosen in the app.
+     *
+     * The service has its own context, which follows the *system* locale — so
+     * without this the tunnel notification would be in a different language from
+     * the app whenever the two disagree.
+     */
+    @Volatile
+    private var strings: Context = this
 
     private val dependencies: TunnelDependencies?
         get() = (application as? TunnelDependenciesProvider)?.tunnelDependencies
@@ -83,7 +95,7 @@ class MoonlightVpnService : VpnService() {
                 // up involves extracting geodata, starting the core and
                 // establishing the interface — easily longer than that — so the
                 // notification cannot wait until the end.
-                promoteToForeground(getString(R.string.ml_notification_connecting))
+                promoteToForeground(strings.getString(R.string.ml_notification_connecting))
                 scope.launch { bringUp() }
             }
         }
@@ -111,6 +123,7 @@ class MoonlightVpnService : VpnService() {
         TunnelState.update(ConnectionState.Connecting(nodeId = null))
 
         val settings = deps.settings.settings.first()
+        strings = localizedFor(settings.language.tag)
         if (deps.subscriptions.subscription.value == null) deps.subscriptions.loadCached()
 
         val subscription = deps.subscriptions.subscription.value
@@ -192,7 +205,7 @@ class MoonlightVpnService : VpnService() {
         }
 
         MoonlightLog.i(TAG, "tunnel up on ${node.name}")
-        promoteToForeground(getString(R.string.ml_notification_connected, node.name))
+        promoteToForeground(strings.getString(R.string.ml_notification_connected, node.name))
         TunnelState.updateSocksPort(socksPort)
         TunnelState.update(ConnectionState.Connected(node.id, System.currentTimeMillis()))
         startStatsPolling()
@@ -309,11 +322,11 @@ class MoonlightVpnService : VpnService() {
     private fun promoteToForeground(text: String) {
         val presenter = notifications ?: return
         val notification = presenter.build(
-            title = getString(R.string.ml_notification_title),
+            title = strings.getString(R.string.ml_notification_title),
             text = text,
             smallIconRes = R.drawable.ml_ic_notification,
             contentIntent = launcherIntent(),
-            disconnectLabel = getString(R.string.ml_notification_disconnect),
+            disconnectLabel = strings.getString(R.string.ml_notification_disconnect),
             disconnectIntent = disconnectIntent(),
         )
         ServiceCompat.startForeground(

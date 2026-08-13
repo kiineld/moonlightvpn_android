@@ -16,15 +16,16 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.MutableStateFlow
+import vpn.moonlight.data.model.AppSettings
 import vpn.moonlight.data.model.ThemeMode
 import vpn.moonlight.deeplink.DeepLink
 import vpn.moonlight.deeplink.DeepLinks
 import vpn.moonlight.design.MoonlightTheme
 import vpn.moonlight.ui.MoonlightApp
+import vpn.moonlight.ui.common.WithAppLanguage
 
 class MainActivity : AppCompatActivity() {
 
@@ -53,24 +54,26 @@ class MainActivity : AppCompatActivity() {
 
         // Theme is read here rather than inside the tree so the very first
         // composition already has the right palette and nothing flashes.
-        val themeFlow = container.settingsStore.settings
-            .map { it.theme }
-            .stateIn(lifecycleScope, SharingStarted.Eagerly, ThemeMode.Dark)
+        val settingsFlow = container.settingsStore.settings
+            .stateIn(lifecycleScope, SharingStarted.Eagerly, AppSettings())
 
         setContent {
-            val theme by themeFlow.collectAsStateWithLifecycle()
-            val dark = when (theme) {
+            val settings by settingsFlow.collectAsStateWithLifecycle()
+            val dark = when (settings.theme) {
                 ThemeMode.Dark -> true
                 ThemeMode.Light -> false
                 ThemeMode.System -> androidx.compose.foundation.isSystemInDarkTheme()
             }
             val link by deepLink.collectAsStateWithLifecycle()
-            MoonlightTheme(darkTheme = dark) {
-                MoonlightApp(
-                    container = container,
-                    deepLink = link,
-                    onDeepLinkHandled = { deepLink.value = null },
-                )
+            // Language is applied here rather than by restarting the app.
+            WithAppLanguage(settings.language) {
+                MoonlightTheme(darkTheme = dark) {
+                    MoonlightApp(
+                        container = container,
+                        deepLink = link,
+                        onDeepLinkHandled = { deepLink.value = null },
+                    )
+                }
             }
         }
     }

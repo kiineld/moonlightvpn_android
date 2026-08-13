@@ -1,7 +1,5 @@
 package vpn.moonlight.ui.settings
 
-import androidx.appcompat.app.AppCompatDelegate
-import androidx.core.os.LocaleListCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -42,13 +40,16 @@ class SettingsViewModel(private val container: AppContainer) : ViewModel() {
         viewModelScope.launch { container.settingsStore.setTheme(mode) }
     }
 
+    /**
+     * Persists the choice and nothing else. The UI re-resolves its strings from
+     * the new locale on the next recomposition — see WithAppLanguage.
+     *
+     * Deliberately not AppCompatDelegate.setApplicationLocales: on API 33+ that
+     * hands off to the system LocaleManager, which restarts the app, and the
+     * system's black transition backdrop during that restart was the flash.
+     */
     fun setLanguage(language: AppLanguage) {
-        viewModelScope.launch {
-            container.settingsStore.setLanguage(language)
-            // Applied through AppCompat so it also works below API 33, where
-            // LocaleManager does not exist. This recreates the activity.
-            AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags(language.tag))
-        }
+        viewModelScope.launch { container.settingsStore.setLanguage(language) }
     }
 
     fun setNotifications(enabled: Boolean) {

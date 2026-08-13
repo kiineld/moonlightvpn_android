@@ -118,7 +118,12 @@ fun LogsScreen(
                         val report = viewModel.buildReport(context)
                         val intent = LogExport.shareIntent(context, report)
                         runCatching {
-                            context.startActivity(Intent.createChooser(intent, shareLabel))
+                            // NEW_TASK because LocalContext is a configuration
+                            // context (see WithAppLanguage), not the Activity.
+                            context.startActivity(
+                                Intent.createChooser(intent, shareLabel)
+                                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
+                            )
                         }
                     }
                 },
