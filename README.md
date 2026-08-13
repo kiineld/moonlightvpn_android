@@ -21,25 +21,36 @@ tun2socks from source, runs the tests, and publishes signed APKs.
 
 ### Signing
 
-Release builds are signed so updates install over each other. By default they use
-`ci/moonlight-ci.keystore`, which is **committed and therefore public** — it
-gives a stable signature but anyone can produce an APK that updates this app.
+Release builds are signed from repository secrets. There is **no key in this
+repository** — a committed signing key is a public one, and anyone holding it can
+build an APK that installs as an update over yours.
 
-To sign with a private key, add four repository secrets and the workflow uses
-them instead:
+Set it up once:
 
 ```bash
-keytool -genkeypair -v -keystore release.keystore -alias moonlight \
-  -keyalg RSA -keysize 4096 -validity 10950
-
-gh secret set MOONLIGHT_KEYSTORE_BASE64 < <(base64 -i release.keystore)
-gh secret set MOONLIGHT_KEYSTORE_PASSWORD
-gh secret set MOONLIGHT_KEY_ALIAS
-gh secret set MOONLIGHT_KEY_PASSWORD
+scripts/setup-signing.sh
 ```
 
-Switching keys means existing installs must be uninstalled before updating, so
-do it before the app has users if you intend to.
+That creates a 4096-bit key at `~/moonlight-release.keystore` and uploads
+`MOONLIGHT_KEYSTORE_BASE64`, `MOONLIGHT_KEYSTORE_PASSWORD`,
+`MOONLIGHT_KEY_ALIAS` and `MOONLIGHT_KEY_PASSWORD` to GitHub. The key never
+touches the repository or the terminal output.
+
+**Back up that file.** Losing it means you can never publish an update that
+installs over the current release — every user would have to uninstall first.
+
+The release workflow refuses to run without those secrets, and verifies with
+`apksigner` that every artifact is signed before publishing. Local `assembleRelease`
+without a key produces an unsigned APK rather than falling back to anything.
+
+To sign locally, put this in `~/.gradle/gradle.properties` (never the repo):
+
+```properties
+moonlight.keystore=/Users/you/moonlight-release.keystore
+moonlight.keystore.password=…
+moonlight.key.alias=moonlight
+moonlight.key.password=…
+```
 
 ## Getting a build
 

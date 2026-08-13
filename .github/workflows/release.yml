@@ -43,19 +43,39 @@ jobs:
       - name: Run the tests before shipping anything
         run: ./gradlew testDebugUnitTest lintDebug
 
+      - name: Check the signing key is configured
+        # Fails before doing any work rather than publishing something unsigned or
+        # signed with a key that is not private. See scripts/setup-signing.sh.
+        env:
+          KEYSTORE: ${{ secrets.MOONLIGHT_KEYSTORE_BASE64 }}
+        run: |
+          if [ -z "$KEYSTORE" ]; then
+            echo "::error::MOONLIGHT_KEYSTORE_BASE64 is not set. Run scripts/setup-signing.sh to create the release key and upload the four secrets."
+            exit 1
+          fi
+
       - name: Build signed release APKs
         env:
-          # Set these repository secrets to sign with a private key. Without
-          # them the build falls back to the committed CI key — see the README.
+          KEYSTORE_BASE64: ${{ secrets.MOONLIGHT_KEYSTORE_BASE64 }}
           MOONLIGHT_KEYSTORE_PASSWORD: ${{ secrets.MOONLIGHT_KEYSTORE_PASSWORD }}
           MOONLIGHT_KEY_ALIAS: ${{ secrets.MOONLIGHT_KEY_ALIAS }}
           MOONLIGHT_KEY_PASSWORD: ${{ secrets.MOONLIGHT_KEY_PASSWORD }}
         run: |
-          if [ -n "${{ secrets.MOONLIGHT_KEYSTORE_BASE64 }}" ]; then
-            echo "${{ secrets.MOONLIGHT_KEYSTORE_BASE64 }}" | base64 -d > "$RUNNER_TEMP/release.keystore"
-            echo "MOONLIGHT_KEYSTORE=$RUNNER_TEMP/release.keystore" >> "$GITHUB_ENV"
-          fi
+          keystore="$RUNNER_TEMP/release.keystore"
+          printf '%s' "$KEYSTORE_BASE64" | base64 -d > "$keystore"
+          export MOONLIGHT_KEYSTORE="$keystore"
           ./gradlew assembleRelease -PuniversalApk
+          # The key does not outlive the step.
+          shred -u "$keystore" 2>/dev/null || rm -f "$keystore"
+
+      - name: Verify every artifact is actually signed
+        run: |
+          buildtools=$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -1)
+          for apk in app/build/outputs/apk/release/*.apk; do
+            "$buildtools/apksigner" verify --print-certs "$apk" > /dev/null \
+              || { echo "::error::$apk is not signed"; exit 1; }
+          done
+          echo "all release APKs are signed"
 
       - name: Name the artifacts for a stable download URL
         run: |

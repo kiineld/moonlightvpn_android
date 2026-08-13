@@ -15,3 +15,6 @@ vpn/src/main/jniLibs/
 design/src/main/res/font/*.ttf
 vpn/src/main/assets/geo/*.dat
 dist/
+ci/
+*.keystore
+*.jks

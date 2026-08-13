@@ -50,32 +50,36 @@ android {
 
     signingConfigs {
         create("release") {
-            // Preferred: a real key supplied by CI secrets.
-            val storeFromEnv = System.getenv("MOONLIGHT_KEYSTORE")
-            val fallback = rootProject.file("ci/moonlight-ci.keystore")
+            // Supplied by CI from repository secrets, or by a local
+            // gradle.properties / environment for a local release build.
+            //
+            // There is deliberately no fallback key. A signing key committed to
+            // the repository is a public key: it keeps update-in-place working,
+            // but anyone can then build an APK that installs as an update over
+            // this one. An unsigned build that fails loudly is the safer default.
+            val store = System.getenv("MOONLIGHT_KEYSTORE")
+                ?: project.findProperty("moonlight.keystore") as String?
 
-            if (storeFromEnv != null && file(storeFromEnv).exists()) {
-                storeFile = file(storeFromEnv)
+            if (store != null && file(store).exists()) {
+                storeFile = file(store)
                 storePassword = System.getenv("MOONLIGHT_KEYSTORE_PASSWORD")
+                    ?: project.findProperty("moonlight.keystore.password") as String?
                 keyAlias = System.getenv("MOONLIGHT_KEY_ALIAS")
+                    ?: project.findProperty("moonlight.key.alias") as String?
                 keyPassword = System.getenv("MOONLIGHT_KEY_PASSWORD")
-            } else if (fallback.exists()) {
-                // Fallback so a release can be built without any secret
-                // configured. This key is committed, so treat it as public: it
-                // gives a stable signature (updates install over each other) but
-                // anyone can produce an APK that updates this app. Set the
-                // MOONLIGHT_KEYSTORE secrets to replace it — see the README.
-                storeFile = fallback
-                storePassword = "moonlight"
-                keyAlias = "moonlight"
-                keyPassword = "moonlight"
+                    ?: project.findProperty("moonlight.key.password") as String?
             }
         }
     }
 
     buildTypes {
         release {
-            signingConfig = signingConfigs.getByName("release")
+            // Left unsigned when no key is configured, rather than falling back
+            // to something checked in. The release workflow refuses to run
+            // without the secrets, so an unsigned APK never reaches a release.
+            signingConfig = signingConfigs.getByName("release").takeIf {
+                it.storeFile != null
+            }
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
