@@ -9,4 +9,5 @@
     <string name="ml_tile_connected">Protected</string>
     <string name="ml_tile_disconnected">Off</string>
     <string name="ml_tile_error">Error</string>
+    <string name="ml_node_auto">Auto</string>
 </resources>

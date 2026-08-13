@@ -9,4 +9,5 @@
     <string name="ml_tile_connected">Защищено</string>
     <string name="ml_tile_disconnected">Выключен</string>
     <string name="ml_tile_error">Ошибка</string>
+    <string name="ml_node_auto">Авто</string>
 </resources>

@@ -86,6 +86,19 @@ fun ServerNode.flagOrDerived(): String? =
             .joinToString("")
     }
 
+/**
+ * The name to show for a node.
+ *
+ * A panel's own balancing node arrives as a flag plus the bare word "Auto". The
+ * flag is replaced by the lightning glyph in the UI, and the word is replaced by
+ * this app's own label so a Russian UI reads "Авто" rather than the panel's
+ * English. A name with anything else in it is the panel's to word.
+ */
+@Composable
+@ReadOnlyComposable
+fun ServerNode.displayName(): String =
+    if (isBareAutoName) stringResource(R.string.connect_auto) else name
+
 /** Localised country name from the node's ISO code, e.g. "Нидерланды". */
 @Composable
 @ReadOnlyComposable

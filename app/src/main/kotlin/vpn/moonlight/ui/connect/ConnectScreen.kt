@@ -54,6 +54,7 @@ import vpn.moonlight.R
 import vpn.moonlight.core.VpnController
 import vpn.moonlight.data.model.ConnectionState
 import vpn.moonlight.data.model.Latency
+import vpn.moonlight.data.model.ServerNode
 import vpn.moonlight.design.MlIcon
 import vpn.moonlight.design.MlIcons
 import vpn.moonlight.design.MlMotion
@@ -70,6 +71,7 @@ import vpn.moonlight.design.ml
 import vpn.moonlight.ui.common.byteText
 import vpn.moonlight.ui.common.daysText
 import vpn.moonlight.ui.common.errorText
+import vpn.moonlight.ui.common.displayName
 import vpn.moonlight.ui.common.flagOrDerived
 import vpn.moonlight.ui.common.latencyText
 import vpn.moonlight.ui.common.subtitleText
@@ -379,7 +381,10 @@ private fun NodeSelector(state: ConnectUiState, viewModel: ConnectViewModel) {
                             .background(ml.colors.surface2),
                         contentAlignment = Alignment.Center,
                     ) {
-                        if (state.isAuto) {
+                        // Lightning for the Auto selection, and equally for the
+                        // panel's own balancing node — pinning it by hand does not
+                        // make it a country.
+                        if (state.isAuto || state.activeNode?.isAutoNode == true) {
                             MlIcon(
                                 MlIcons.Zap,
                                 size = 19.dp,
@@ -398,7 +403,7 @@ private fun NodeSelector(state: ConnectUiState, viewModel: ConnectViewModel) {
                             // it again would read "Авто · Auto".
                             state.isAuto && !node.isAutoNode ->
                                 stringResource(R.string.connect_auto_prefix, node.name)
-                            else -> node.name
+                            else -> node.displayName()
                         }
                         MlText(
                             title,
@@ -464,6 +469,25 @@ private fun NodeList(state: ConnectUiState, viewModel: ConnectViewModel) {
     }
 }
 
+/**
+ * The mark at the head of a node row: the country flag, or the lightning bolt for
+ * a panel's balancing node — which has no country to show, and reads as the same
+ * thing the Auto selector does.
+ *
+ * A fixed width so every row's text starts on the same line, which flag emoji of
+ * differing widths would not manage on their own.
+ */
+@Composable
+private fun NodeGlyph(node: ServerNode) {
+    Box(Modifier.size(22.dp), contentAlignment = Alignment.Center) {
+        if (node.isAutoNode) {
+            MlIcon(MlIcons.Zap, size = 18.dp, tint = ml.colors.accentInk, strokeWidth = 2.2f)
+        } else {
+            MlText(node.flagOrDerived().orEmpty(), ml.type.lead)
+        }
+    }
+}
+
 @Composable
 private fun NodeRowItem(row: NodeRow, viewModel: ConnectViewModel) {
     Box(
@@ -480,10 +504,10 @@ private fun NodeRowItem(row: NodeRow, viewModel: ConnectViewModel) {
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                MlText(row.node.flagOrDerived().orEmpty(), ml.type.lead)
+                NodeGlyph(row.node)
                 Column(Modifier.weight(1f)) {
                     MlText(
-                        row.node.name,
+                        row.node.displayName(),
                         ml.type.bodySmTitle,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,

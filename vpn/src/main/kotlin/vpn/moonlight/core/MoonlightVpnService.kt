@@ -205,7 +205,10 @@ class MoonlightVpnService : VpnService() {
         }
 
         MoonlightLog.i(TAG, "tunnel up on ${node.name}")
-        promoteToForeground(strings.getString(R.string.ml_notification_connected, node.name))
+        // The panel's balancing node is called "Auto"; a Russian notification
+        // should not read "Подключено к Auto".
+        val shown = if (node.isBareAutoName) strings.getString(R.string.ml_node_auto) else node.name
+        promoteToForeground(strings.getString(R.string.ml_notification_connected, shown))
         TunnelState.updateSocksPort(socksPort)
         TunnelState.update(ConnectionState.Connected(node.id, System.currentTimeMillis()))
         startStatsPolling()

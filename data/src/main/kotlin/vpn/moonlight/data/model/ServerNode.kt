@@ -43,6 +43,14 @@ data class ServerNode(
     val isAutoNode: Boolean
         get() = AUTO_MARKERS.any { name.contains(it, ignoreCase = true) }
 
+    /**
+     * True when the name is *only* the auto marker, so the UI can substitute its
+     * own localised wording. A name like "Auto · Europe" carries something the
+     * panel meant to say and is left alone.
+     */
+    val isBareAutoName: Boolean
+        get() = AUTO_MARKERS.any { name.trim().equals(it, ignoreCase = true) }
+
     private companion object {
         val AUTO_MARKERS = listOf("auto", "авто")
     }
