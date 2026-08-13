@@ -1,5 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="ml_launcher_background">#D2FF1F</color>
-    <color name="ml_window_background">#101828</color>
+
+    <!-- Light values. The -night variants carry the dark ones, and the app tells
+         the framework which set to use via AppCompatDelegate.setDefaultNightMode,
+         so windows the system draws for us — the starting window during a
+         language-change restart, the splash — match the theme in the app. -->
+    <color name="ml_window_background">#F2F3ED</color>
+    <color name="ml_splash_icon_background">#D2FF1F</color>
 </resources>

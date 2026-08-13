@@ -20,9 +20,10 @@ android {
 
         // The panel these subscriptions live on. Override per flavour/build.
         buildConfigField("String", "DEFAULT_PANEL_HOST", "\"sub.moonlight.vpn\"")
-        buildConfigField("String", "TELEGRAM_BOT_URL", "\"https://t.me/moonlight_vpn_bot\"")
-        buildConfigField("String", "TELEGRAM_CHANNEL_URL", "\"https://t.me/moonlight_vpn\"")
+        buildConfigField("String", "TELEGRAM_BOT_URL", "\"https://t.me/the_moonlight_vpn_bot\"")
+        buildConfigField("String", "TELEGRAM_CHANNEL_URL", "\"https://t.me/moonlight_vpn_channel\"")
         buildConfigField("String", "SUPPORT_URL", "\"https://t.me/moonlight_support\"")
+        buildConfigField("String", "CABINET_URL", "\"https://cabinetofficial.rustafield.site\"")
     }
 
     // A ~50 MB libgojni.so per ABI makes a universal APK unreasonable, so
@@ -122,6 +123,7 @@ dependencies {
     // Carries AppCompatDelegate.setApplicationLocales, the per-app locale
     // backport for API 26..32 where LocaleManager does not exist.
     implementation(libs.androidx.appcompat)
+    implementation(libs.androidx.splashscreen)
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.lifecycle.runtime.compose)
     implementation(libs.androidx.lifecycle.viewmodel.compose)

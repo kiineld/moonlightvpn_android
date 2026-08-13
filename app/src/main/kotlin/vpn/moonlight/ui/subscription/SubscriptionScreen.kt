@@ -160,10 +160,7 @@ fun SubscriptionScreen(
                     MlNavRow(
                         title = stringResource(R.string.subscription_extend),
                         subtitle = stringResource(R.string.subscription_extend_sub),
-                        // profile-web-page-url is the customer's own cabinet.
-                        onClick = {
-                            context.openUrl(subscription.webPageUrl ?: BuildConfig.TELEGRAM_BOT_URL)
-                        },
+                        onClick = { context.openUrl(BuildConfig.CABINET_URL) },
                         icon = MlIcons.Sparkles,
                         tileFill = ml.colors.cat2,
                         titleEmphatic = true,

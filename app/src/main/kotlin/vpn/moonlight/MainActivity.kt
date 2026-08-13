@@ -10,6 +10,7 @@ import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.getValue
@@ -37,9 +38,12 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         val container = (application as MoonlightApplication).container
 
-        // Before the first frame. Changing the language recreates the activity,
-        // and the system paints windowBackground during the gap — a fixed dark
-        // colour there is a black flash for anyone on the light theme.
+        // Must precede super.onCreate. Swaps the splash theme for the app theme.
+        installSplashScreen()
+
+        // Belt and braces for the window this activity owns. The system-drawn
+        // starting window is handled by the day/night background resource plus
+        // the night mode published in MoonlightApplication.
         applyWindowBackground(container.themeStartupCache.theme)
 
         super.onCreate(savedInstanceState)

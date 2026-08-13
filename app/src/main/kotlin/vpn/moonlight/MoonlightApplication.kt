@@ -12,6 +12,7 @@ import vpn.moonlight.core.TunnelDependencies
 import vpn.moonlight.alerts.SubscriptionAlerts
 import vpn.moonlight.core.TunnelDependenciesProvider
 import vpn.moonlight.core.xray.XrayAssets
+import vpn.moonlight.data.model.ThemeMode
 
 class MoonlightApplication : Application(), TunnelDependenciesProvider {
 
@@ -40,6 +41,7 @@ class MoonlightApplication : Application(), TunnelDependenciesProvider {
             // the first frame, which is what removes the flash on a language change.
             container.settingsStore.settings.collect { settings ->
                 container.themeStartupCache.theme = settings.theme
+                applyNightMode(settings.theme)
             }
         }
 
@@ -54,6 +56,26 @@ class MoonlightApplication : Application(), TunnelDependenciesProvider {
 
             val settings = container.settingsStore.settings.first()
             applyLanguage(settings.language.tag)
+        }
+    }
+
+    /**
+     * Publishes the app's light/dark choice to the framework.
+     *
+     * This is what makes `-night` resources resolve for windows the *system*
+     * draws — in particular the starting window shown while the app restarts
+     * after a language change. On API 31+ AppCompat routes this to
+     * `UiModeManager.setApplicationNightMode`, which the system remembers, so it
+     * gets the background right before a single line of app code has run.
+     */
+    private fun applyNightMode(theme: ThemeMode) {
+        val mode = when (theme) {
+            ThemeMode.Dark -> AppCompatDelegate.MODE_NIGHT_YES
+            ThemeMode.Light -> AppCompatDelegate.MODE_NIGHT_NO
+            ThemeMode.System -> AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
+        }
+        if (AppCompatDelegate.getDefaultNightMode() != mode) {
+            AppCompatDelegate.setDefaultNightMode(mode)
         }
     }
 

@@ -34,7 +34,7 @@
             android:configChanges="orientation|screenSize|screenLayout|keyboardHidden|uiMode|smallestScreenSize|density"
             android:exported="true"
             android:launchMode="singleTask"
-            android:theme="@style/Theme.Moonlight"
+            android:theme="@style/Theme.Moonlight.Splash"
             android:windowSoftInputMode="adjustResize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
