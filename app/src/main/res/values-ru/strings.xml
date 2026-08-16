@@ -22,8 +22,6 @@
     <string name="import_or_manually">ИЛИ ВРУЧНУЮ</string>
     <string name="import_url_placeholder">https://sub.moonlight.vpn/…</string>
     <string name="import_add">Добавить</string>
-    <string name="import_telegram_title">Открыть Telegram-бота</string>
-    <string name="import_telegram_sub">Ссылка придёт в чат и добавится сама</string>
     <string name="import_success_title">Подписка добавлена:</string>
     <string name="import_success_connect">Подключиться</string>
     <plurals name="import_servers_count">
@@ -86,7 +84,6 @@
     <string name="subscription_expired">Истекла</string>
     <string name="subscription_label_remaining">ОСТАЛОСЬ</string>
     <string name="subscription_label_traffic">ТРАФИК</string>
-    <string name="subscription_label_devices">УСТРОЙСТВА</string>
     <string name="subscription_traffic_of">%1$s из %2$s</string>
     <string name="subscription_traffic_unlimited">Без лимита</string>
     <string name="subscription_valid_until">действует до %1$s</string>

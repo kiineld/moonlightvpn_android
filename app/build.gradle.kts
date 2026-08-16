@@ -20,7 +20,6 @@ android {
 
         // The panel these subscriptions live on. Override per flavour/build.
         buildConfigField("String", "DEFAULT_PANEL_HOST", "\"sub.moonlight.vpn\"")
-        buildConfigField("String", "TELEGRAM_BOT_URL", "\"https://t.me/the_moonlight_vpn_bot\"")
         buildConfigField("String", "TELEGRAM_CHANNEL_URL", "\"https://t.me/moonlight_vpn_channel\"")
         buildConfigField("String", "SUPPORT_URL", "\"https://t.me/moonlight_support\"")
         buildConfigField("String", "CABINET_URL", "\"https://cabinetofficial.rustafield.site\"")

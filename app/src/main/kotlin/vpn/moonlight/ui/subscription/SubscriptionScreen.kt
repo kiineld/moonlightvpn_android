@@ -331,27 +331,9 @@ private fun PlanHero(
                             ?: stringResource(R.string.subscription_unknown),
                         Modifier.weight(1f),
                     )
-                    HeroStat(
-                        stringResource(R.string.subscription_label_devices),
-                        formatDevices(info),
-                        Modifier.weight(1f),
-                    )
                 }
             }
         }
-    }
-}
-
-@Composable
-private fun formatDevices(info: SubscriptionUserInfo?): String {
-    val limit = info?.deviceLimit
-    val used = info?.devicesUsed
-    return when {
-        // Remnawave omits the device fields entirely when no HWID cap is set, so
-        // absent means unlimited here rather than unknown.
-        limit == null -> stringResource(R.string.subscription_unlimited_short)
-        used == null -> "$limit"
-        else -> "$used / $limit"
     }
 }
 

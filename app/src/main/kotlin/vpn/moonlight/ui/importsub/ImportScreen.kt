@@ -3,9 +3,7 @@ package vpn.moonlight.ui.importsub
 import android.Manifest
 import android.content.ClipboardManager
 import android.content.Context
-import android.content.Intent
 import android.content.pm.PackageManager
-import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.core.LinearEasing
@@ -33,7 +31,6 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -61,15 +58,11 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import vpn.moonlight.BuildConfig
 import vpn.moonlight.R
 import vpn.moonlight.design.MlIcon
 import vpn.moonlight.design.MlIcons
 import vpn.moonlight.design.MlShape
-import vpn.moonlight.design.components.MlCard
-import vpn.moonlight.design.components.MlChevron
 import vpn.moonlight.design.components.MlIconButton
-import vpn.moonlight.design.components.MlIconTile
 import vpn.moonlight.design.components.MlPressable
 import vpn.moonlight.design.components.MlPrimaryButton
 import vpn.moonlight.design.components.MlText
@@ -236,34 +229,6 @@ private fun ImportForm(state: ImportUiState, viewModel: ImportViewModel) {
         state.errorRes?.let { errorRes ->
             Spacer(Modifier.height(10.dp))
             MlText(stringResource(errorRes), ml.type.meta, color = ml.colors.danger)
-        }
-
-        Spacer(Modifier.height(12.dp))
-        MlCard(shape = RoundedCornerShape(22.dp)) {
-            MlPressable(onClick = { context.openTelegramBot() }) {
-                Row(
-                    Modifier
-                        .fillMaxWidth()
-                        .border(1.dp, ml.colors.hairline, RoundedCornerShape(22.dp))
-                        .padding(horizontal = 16.dp, vertical = 14.dp),
-                    horizontalArrangement = Arrangement.spacedBy(14.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    MlIconTile(ml.colors.telegram, size = 44.dp, shape = MlShape.IconTileLg) {
-                        MlIcon(MlIcons.Send, size = 20.dp, tint = Color.White)
-                    }
-                    Column(Modifier.weight(1f)) {
-                        MlText(stringResource(R.string.import_telegram_title), ml.type.bodyEmphatic)
-                        Spacer(Modifier.height(2.dp))
-                        MlText(
-                            stringResource(R.string.import_telegram_sub),
-                            ml.type.meta,
-                            color = ml.colors.textMuted,
-                        )
-                    }
-                    MlChevron()
-                }
-            }
         }
     }
 }
@@ -510,13 +475,4 @@ private fun Context.clipboardText(): String? {
     val clip = manager.primaryClip ?: return null
     if (clip.itemCount == 0) return null
     return clip.getItemAt(0).coerceToText(this)?.toString()
-}
-
-private fun Context.openTelegramBot() {
-    runCatching {
-        startActivity(
-            Intent(Intent.ACTION_VIEW, Uri.parse(BuildConfig.TELEGRAM_BOT_URL))
-                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
-        )
-    }
 }

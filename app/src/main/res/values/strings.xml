@@ -25,8 +25,6 @@
     <string name="import_or_manually">OR MANUALLY</string>
     <string name="import_url_placeholder">https://sub.moonlight.vpn/…</string>
     <string name="import_add">Add</string>
-    <string name="import_telegram_title">Open the Telegram bot</string>
-    <string name="import_telegram_sub">The link arrives in chat and adds itself</string>
     <string name="import_success_title">Subscription added:</string>
     <string name="import_success_connect">Connect</string>
     <plurals name="import_servers_count">
@@ -87,7 +85,6 @@
     <string name="subscription_expired">Expired</string>
     <string name="subscription_label_remaining">REMAINING</string>
     <string name="subscription_label_traffic">TRAFFIC</string>
-    <string name="subscription_label_devices">DEVICES</string>
     <string name="subscription_traffic_of">%1$s of %2$s</string>
     <string name="subscription_traffic_unlimited">Unlimited</string>
     <string name="subscription_valid_until">valid until %1$s</string>

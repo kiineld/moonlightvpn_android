@@ -316,8 +316,8 @@ what was added and can delete it.
 | Field | Purpose |
 |---|---|
 | `DEFAULT_PANEL_HOST` | Placeholder host shown in the import field |
-| `TELEGRAM_BOT_URL` | "Open the Telegram bot" row, "Extend subscription" |
 | `TELEGRAM_CHANNEL_URL` | Settings → Our channel |
+| `CABINET_URL` | Subscription → Extend subscription |
 | `SUPPORT_URL` | Settings → Support |
 
 The design's `sub.moonlight.vpn` is a placeholder; point these at real endpoints
