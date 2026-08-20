@@ -69,12 +69,12 @@ class SplitTunnelViewModel(private val container: AppContainer) : ViewModel() {
         viewModelScope.launch { container.settingsStore.setSplitMode(mode) }
     }
 
+    /**
+     * Note this does not compute the new selection here: `state.value.apps` is
+     * filtered by the search query, so anything the query hides is not in it.
+     */
     fun toggleApp(packageName: String) {
-        viewModelScope.launch {
-            val current = state.value.apps.filter { it.isSelected }.map { it.app.packageName }.toSet()
-            val next = if (packageName in current) current - packageName else current + packageName
-            container.settingsStore.setSplitPackages(next)
-        }
+        viewModelScope.launch { container.settingsStore.toggleSplitPackage(packageName) }
     }
 
     companion object {

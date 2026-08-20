@@ -60,7 +60,23 @@ class SettingsStore(private val context: Context) {
 
     suspend fun setSplitMode(mode: SplitMode) = edit { it[Keys.splitMode] = mode.name }
 
-    suspend fun setSplitPackages(packages: Set<String>) = edit { it[Keys.splitPackages] = packages }
+    /**
+     * Flips one package in the split-tunnelling selection.
+     *
+     * A toggle rather than a whole-set write, deliberately. The screen filters its
+     * rows by a search query, so the selection it can see is not the selection
+     * that exists; rebuilding the set from the visible rows and storing that
+     * silently dropped every app the search had hidden. Reading the stored set
+     * here means the caller never needs — or gets — the chance.
+     *
+     * DataStore serialises edit blocks, so two quick taps cannot lose each other
+     * to a read-modify-write race either.
+     */
+    suspend fun toggleSplitPackage(packageName: String) = edit { prefs ->
+        val current = prefs[Keys.splitPackages] ?: emptySet()
+        prefs[Keys.splitPackages] =
+            if (packageName in current) current - packageName else current + packageName
+    }
 
     suspend fun setSelection(selection: NodeSelection) = edit { prefs ->
         when (selection) {
