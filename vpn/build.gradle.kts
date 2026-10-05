@@ -41,9 +41,6 @@ dependencies {
     api(group = "", name = "libXray", ext = "aar")
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.service)
-    // The latency probe dials through the local SOCKS proxy itself, because
-    // libXray's own ping disables keep-alives and so measures handshakes.
-    implementation(libs.okhttp)
 
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)

@@ -2,11 +2,11 @@ package vpn.moonlight
 
 import android.content.Context
 import java.io.File
+import vpn.moonlight.core.xray.LatencyProbe
 import vpn.moonlight.core.xray.LibXrayCore
-import vpn.moonlight.core.xray.XrayAssets
-import vpn.moonlight.core.xray.WarmLatencyProbe
 import vpn.moonlight.core.xray.XrayCore
 import vpn.moonlight.data.local.DeviceIdentity
+import vpn.moonlight.data.local.LatencyStore
 import vpn.moonlight.data.local.SettingsStore
 import vpn.moonlight.data.local.ThemeStartupCache
 import vpn.moonlight.data.local.SubscriptionStore
@@ -32,7 +32,9 @@ class AppContainer(private val context: Context) {
     val deviceIdentity = DeviceIdentity(context, settingsStore)
     val installedApps = InstalledAppsRepository(context)
 
-    val latencyRepository = LatencyRepository()
+    val latencyRepository = LatencyRepository(
+        store = LatencyStore(File(context.filesDir, "latencies.json")),
+    )
 
     private val subscriptionApi = SubscriptionApi(deviceIdentity)
     private val subscriptionStore = SubscriptionStore(context)
@@ -60,10 +62,12 @@ class AppContainer(private val context: Context) {
     val xrayCore: XrayCore by lazy { LibXrayCore() }
 
     val latencyProbe by lazy {
-        WarmLatencyProbe(
+        LatencyProbe(
             xray = xrayCore,
             latencies = latencyRepository,
-            assetDir = XrayAssets.directory(context).absolutePath,
+            // Cache, and private to the app: the files in it carry a node's
+            // credentials for the moment the core is reading them.
+            workDir = File(context.cacheDir, "ping"),
         )
     }
 }

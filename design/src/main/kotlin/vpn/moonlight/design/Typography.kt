@@ -35,6 +35,7 @@ val OnestFamily = FontFamily(
 )
 
 val UnboundedFamily = FontFamily(
+    variableFont(R.font.unbounded_variable, 600),
     variableFont(R.font.unbounded_variable, 700),
     variableFont(R.font.unbounded_variable, 800),
 )
@@ -88,6 +89,14 @@ data class MoonlightTypography(
     val titleSm: TextStyle = display(20f, 1.1f),
     /** Card headline. */
     val lead: TextStyle = display(19f, 1.1f),
+    /**
+     * The connection time. A hero number, so the display face — a step lighter
+     * than a title, and tabular so the time ticks without the digits shifting.
+     */
+    val timer: TextStyle = display(24f, 1.1f, -0.01f).copy(
+        fontWeight = MlWeight.Medium,
+        fontFeatureSettings = "tnum",
+    ),
 
     /** Row title, button label, input value. */
     val body: TextStyle = text(15f),

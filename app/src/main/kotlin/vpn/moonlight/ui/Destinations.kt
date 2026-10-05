@@ -2,7 +2,6 @@ package vpn.moonlight.ui
 
 /** Every screen in the app. The first three are tab roots; the rest are pushed. */
 enum class Destination(val route: String) {
-    Onboarding("onboarding"),
     Import("import"),
     Connect("connect"),
     Subscription("subscription"),

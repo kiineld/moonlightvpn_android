@@ -45,6 +45,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
@@ -260,8 +262,11 @@ private fun ScannerFrame(
         CornerBracket(Alignment.BottomStart)
         CornerBracket(Alignment.BottomEnd)
 
+        // Drawn, not laid out. The line used to be a box between two weighted
+        // spacers, which re-measured the whole frame on every frame of the
+        // sweep; read in the draw block, a step of the sweep is one repaint.
         val sweep = rememberInfiniteTransition(label = "scan")
-        val offset by sweep.animateFloat(
+        val offset = sweep.animateFloat(
             initialValue = 0f,
             targetValue = 1f,
             animationSpec = infiniteRepeatable(
@@ -270,22 +275,20 @@ private fun ScannerFrame(
             ),
             label = "scanOffset",
         )
-        // Expressed with weights so the sweep spans whatever height the square
-        // resolves to, without a custom layout.
-        Column(
+        val scanLine = ml.colors.accent.copy(alpha = 0.75f)
+        Box(
             Modifier
                 .fillMaxSize()
-                .padding(26.dp),
-        ) {
-            Spacer(Modifier.weight(offset.coerceIn(0.001f, 0.999f)))
-            Box(
-                Modifier
-                    .fillMaxWidth()
-                    .height(2.dp)
-                    .background(ml.colors.accent.copy(alpha = 0.75f)),
-            )
-            Spacer(Modifier.weight((1f - offset).coerceIn(0.001f, 0.999f)))
-        }
+                .padding(26.dp)
+                .drawBehind {
+                    val thickness = 2.dp.toPx()
+                    drawRect(
+                        color = scanLine,
+                        topLeft = Offset(0f, (size.height - thickness) * offset.value),
+                        size = Size(size.width, thickness),
+                    )
+                },
+        )
 
         if (hasCameraPermission) {
             MlText(

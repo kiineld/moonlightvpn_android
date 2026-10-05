@@ -27,7 +27,6 @@ data class AppSettings(
     val splitMode: SplitMode = SplitMode.All,
     val splitPackages: Set<String> = emptySet(),
     val selection: NodeSelection = NodeSelection.Auto,
-    val onboardingComplete: Boolean = false,
     /** Raises xray-core's own log level to debug, for diagnosing a report. */
     val verboseLogging: Boolean = false,
 )

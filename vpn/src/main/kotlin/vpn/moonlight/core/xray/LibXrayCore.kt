@@ -5,11 +5,13 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.addJsonObject
 import kotlinx.serialization.json.booleanOrNull
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.intOrNull
 import kotlinx.serialization.json.put
+import kotlinx.serialization.json.putJsonArray
 
 /**
  * [XrayCore] over the gomobile binding.
@@ -51,6 +53,41 @@ class LibXrayCore : XrayCore {
                 ports.mapNotNull { (it as? JsonPrimitive)?.intOrNull }
             }
 
+    override fun pingBatch(
+        targets: List<PingTarget>,
+        timeoutSeconds: Int,
+        url: String,
+    ): Result<List<Int?>> {
+        val payload = buildJsonObject {
+            putJsonArray("configs") {
+                targets.forEach { target ->
+                    addJsonObject {
+                        put("configPath", target.configPath)
+                        put("outboundTag", target.outboundTag)
+                    }
+                }
+            }
+            put("timeout", timeoutSeconds)
+            put("url", url)
+        }
+        // quiet: a node that does not answer is the expected result of probing a
+        // dead node, and a pass over a subscription should not fill the log.
+        return invoke("pingBatch", payload, quiet = true).mapCatching { data ->
+            val results = (data as? JsonObject)?.get("results") as? JsonArray
+                ?: throw XrayException("core returned no ping results")
+            if (results.size != targets.size) {
+                throw XrayException("core returned ${results.size} ping results for ${targets.size} targets")
+            }
+            results.map { entry ->
+                val result = entry as? JsonObject ?: return@map null
+                val answered = (result["success"] as? JsonPrimitive)?.booleanOrNull ?: false
+                // `delay` is omitted from the JSON when it is zero.
+                val delay = (result["delay"] as? JsonPrimitive)?.intOrNull ?: 0
+                if (answered) delay.coerceAtLeast(1) else null
+            }
+        }
+    }
+
     override fun registerSocketProtector(protect: (Int) -> Boolean) {
         runCatching {
             val controller = libXray.DialerController { fd -> protect(fd.toInt()) }
@@ -69,7 +106,11 @@ class LibXrayCore : XrayCore {
     }
 
     /** Wraps one `invoke` round trip: build the envelope, unwrap the response. */
-    private fun invoke(method: String, payload: JsonObject? = null): Result<JsonObject?> {
+    private fun invoke(
+        method: String,
+        payload: JsonObject? = null,
+        quiet: Boolean = false,
+    ): Result<JsonObject?> {
         val request = buildJsonObject {
             put("apiVersion", API_VERSION)
             put("method", method)
@@ -85,7 +126,7 @@ class LibXrayCore : XrayCore {
         val success = (response["success"] as? JsonPrimitive)?.booleanOrNull ?: false
         if (!success) {
             val error = (response["error"] as? JsonPrimitive)?.contentOrNull ?: "unknown error"
-            MoonlightLog.w(TAG, "$method failed: $error")
+            if (!quiet) MoonlightLog.w(TAG, "$method failed: $error")
             return Result.failure(XrayException("$method: $error"))
         }
         return Result.success(response["data"] as? JsonObject)

@@ -1,6 +1,7 @@
 package vpn.moonlight.design.components
 
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.VisibilityThreshold
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -17,6 +18,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import vpn.moonlight.design.MlIcon
 import vpn.moonlight.design.MlIconSpec
@@ -30,7 +32,7 @@ data class MlTab(val icon: MlIconSpec, val contentDescription: String)
 
 /**
  * The floating pill navigation. An accent puck slides behind the active icon on
- * the overshoot curve; the icons themselves only change colour.
+ * the one curve; the icons themselves only change colour.
  */
 @Composable
 fun MlTabBar(
@@ -43,7 +45,7 @@ fun MlTabBar(
     val gap = 4.dp
     val puckOffset by animateDpAsState(
         targetValue = (itemSize + gap) * selectedIndex.coerceAtLeast(0),
-        animationSpec = MlMotion.slide(),
+        animationSpec = MlMotion.slide(Dp.VisibilityThreshold),
         label = "tabPuck",
     )
 

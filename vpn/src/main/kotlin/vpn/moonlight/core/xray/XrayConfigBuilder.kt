@@ -13,11 +13,11 @@ import kotlinx.serialization.json.put
 import kotlinx.serialization.json.putJsonArray
 import kotlinx.serialization.json.putJsonObject
 
-/** One node in a batched latency pass: its full config and the port it listens on. */
-data class ProbeTarget(val configJson: String, val socksPort: Int)
-
-/** A merged batch config, and which of the requested targets it actually covers. */
-data class BatchProbeConfig(val json: String, val accepted: List<Int>)
+/**
+ * What a latency probe needs from a node's config: its outbounds, as the file the
+ * core reads them from, and the tags of the ones to time.
+ */
+data class PingConfig(val json: String, val tags: List<String>)
 
 /** Knobs for the generated Xray config. */
 data class XrayConfigOptions(
@@ -71,12 +71,9 @@ object XrayConfigBuilder {
     const val BLOCK_TAG = "block"
     private const val ASSET_LOCATION_KEY = "xray.location.asset"
 
-    /** Keys whose value is a single tag, when namespacing a config for a batch. */
-    private val TAG_KEYS = setOf("tag")
-    private val BALANCER_TAG_KEYS = setOf("tag", "fallbackTag")
-
-    /** Keys holding tag *prefixes* that Xray matches against outbound tags. */
-    private val BALANCER_SELECTOR_KEYS = setOf("selector")
+    /** Outbounds every panel config carries beside its proxies, which are no node. */
+    private val infrastructureTags = setOf(DIRECT_TAG, BLOCK_TAG, "dns-out", "dns_out")
+    private val infrastructureProtocols = setOf("freedom", "blackhole", "dns")
 
     private val json = Json { ignoreUnknownKeys = true; isLenient = true }
 
@@ -171,207 +168,67 @@ object XrayConfigBuilder {
     }
 
     /**
-     * A minimal config for latency probing: enough to dial through the node, and
-     * nothing else.
+     * What to hand the core's own latency probe for a node.
      *
-     * DNS and the panel's routing rules are dropped deliberately. Those rules are
-     * full of `geosite:`/`geoip:` references, and loading 22 MB of geodata for
-     * each of two dozen short-lived probe instances would dominate the
-     * measurement. Balancers and the burst observatory are kept, because for a
-     * balancer node the balancer *is* what we want to measure.
+     * The probe wants nothing but outbounds. It dials through one of them
+     * directly, with no inbound, no routing and so no geodata — which is what
+     * lets it run in an instance of its own beside the one carrying the tunnel.
+     *
+     * A plain node has one outbound worth timing. A balancer node has several,
+     * and no single one of them is "the node": the balancer sends traffic to
+     * whichever is doing best, so the members are all timed and the node is as
+     * fast as its fastest. [maxTargets] bounds that, because a balancer may list
+     * a dozen servers and the core takes only so many in one go.
      */
-    fun probeConfig(fullConfigJson: String, options: XrayConfigOptions): String {
+    fun pingConfig(fullConfigJson: String, maxTargets: Int = MAX_PING_BATCH): PingConfig {
         val root = runCatching { json.parseToJsonElement(fullConfigJson) }.getOrNull() as? JsonObject
             ?: throw XrayConfigException("probe config is not a JSON object")
-        val outbounds = root["outbounds"] as? JsonArray
+        val outbounds = (root["outbounds"] as? JsonArray)?.takeIf { it.isNotEmpty() }
             ?: throw XrayConfigException("probe config has no outbounds")
-        if (outbounds.isEmpty()) throw XrayConfigException("probe config has no outbounds")
 
-        val balancers = (root["routing"] as? JsonObject)?.get("balancers") as? JsonArray
-        val balancerTag = balancers
+        val tags = balancerMemberTags(root, outbounds).take(maxTargets)
+            .ifEmpty { listOf(primaryOutboundTag(outbounds)) }
+
+        return PingConfig(buildJsonObject { put("outbounds", outbounds) }.toString(), tags)
+    }
+
+    /**
+     * The same for a share link, from the config the core converted it into.
+     * There is one outbound, and it is tagged [PROXY_TAG] on the way out.
+     */
+    fun pingConfigFromShareLink(convertedConfig: String): PingConfig {
+        val outbound = extractProxyOutbound(convertedConfig)
+        return PingConfig(
+            buildJsonObject { putJsonArray("outbounds") { add(outbound) } }.toString(),
+            listOf(PROXY_TAG),
+        )
+    }
+
+    /**
+     * The outbounds a config's balancer chooses between.
+     *
+     * A balancer's `selector` is a list of tag *prefixes*, and Xray takes every
+     * outbound whose tag starts with one of them — whatever its protocol. The
+     * same rule is applied here and nothing is added to it: second-guessing
+     * which of those "really" are nodes would time a different set from the
+     * one the balancer picks from.
+     */
+    private fun balancerMemberTags(root: JsonObject, outbounds: JsonArray): List<String> {
+        val balancer = ((root["routing"] as? JsonObject)?.get("balancers") as? JsonArray)
             ?.filterIsInstance<JsonObject>()
             ?.firstOrNull()
-            ?.let { (it["tag"] as? JsonPrimitive)?.contentOrNull }
+            ?: return emptyList()
+        val selectors = (balancer["selector"] as? JsonArray)
+            ?.mapNotNull { (it as? JsonPrimitive)?.contentOrNull }
+            ?.filter { it.isNotEmpty() }
+            .orEmpty()
+        if (selectors.isEmpty()) return emptyList()
 
-        return buildJsonObject {
-            environment(options)?.let { put("env", it) }
-            put("log", logBlock(options))
-            putJsonArray("inbounds") { add(socksInbound(options)) }
-            put("outbounds", outbounds)
-            root["burstObservatory"]?.let { put("burstObservatory", it) }
-            putJsonObject("routing") {
-                put("domainStrategy", "AsIs")
-                if (balancers != null && balancers.isNotEmpty()) put("balancers", balancers)
-                putJsonArray("rules") {
-                    add(
-                        buildJsonObject {
-                            put("type", "field")
-                            put("network", "tcp,udp")
-                            if (balancerTag != null) {
-                                put("balancerTag", balancerTag)
-                            } else {
-                                put("outboundTag", primaryOutboundTag(outbounds))
-                            }
-                        },
-                    )
-                }
-            }
-        }.toString()
+        return outbounds.filterIsInstance<JsonObject>()
+            .mapNotNull { (it["tag"] as? JsonPrimitive)?.contentOrNull }
+            .filter { tag -> selectors.any(tag::startsWith) }
+            .distinct()
     }
-
-
-    /**
-     * Builds ONE config that measures many nodes at once.
-     *
-     * The core is the bottleneck, not the network: libXray allows a single global
-     * instance, so measuring node by node pays a core start, a handshake and a
-     * teardown each time and a two-dozen-node pass takes the better part of a
-     * minute. One instance can carry every node at once, though — each node gets
-     * its own SOCKS inbound, and a routing rule pins that inbound to that node's
-     * own outbound or balancer, so the measurements are independent and run
-     * concurrently.
-     *
-     * Every tag is namespaced per node (`p3_proxy`), because unrelated panel
-     * configs routinely use the same tags — `proxy`, `direct`, `block` — and
-     * merging them unprefixed would silently cross-wire one node's traffic into
-     * another's outbound. Balancer selectors and the observatory's subject
-     * selector are prefix matchers over those same tags, so they take the prefix
-     * too.
-     *
-     * Nodes whose config cannot be used are skipped rather than failing the
-     * batch; [BatchProbeConfig.accepted] says which ones made it in.
-     */
-    fun batchProbeConfig(targets: List<ProbeTarget>, options: XrayConfigOptions): BatchProbeConfig {
-        if (targets.isEmpty()) throw XrayConfigException("batch probe needs at least one target")
-
-        val inbounds = mutableListOf<JsonElement>()
-        val outbounds = mutableListOf<JsonElement>()
-        val balancers = mutableListOf<JsonElement>()
-        val rules = mutableListOf<JsonElement>()
-        val observatorySubjects = mutableListOf<String>()
-        var observatory: JsonObject? = null
-        val accepted = mutableListOf<Int>()
-
-        targets.forEachIndexed { index, target ->
-            val prefix = "p${index}_"
-            val root = runCatching { json.parseToJsonElement(target.configJson) }.getOrNull() as? JsonObject
-                ?: return@forEachIndexed
-            val nodeOutbounds = (root["outbounds"] as? JsonArray)?.takeIf { it.isNotEmpty() }
-                ?: return@forEachIndexed
-
-            val nodeBalancers = (root["routing"] as? JsonObject)?.get("balancers") as? JsonArray
-            val balancerTag = nodeBalancers
-                ?.filterIsInstance<JsonObject>()
-                ?.firstOrNull()
-                ?.let { (it["tag"] as? JsonPrimitive)?.contentOrNull }
-
-            // Resolved before anything is added, so a config with no usable
-            // outbound leaves the batch untouched instead of half-merged.
-            val destination = if (balancerTag != null) {
-                null
-            } else {
-                runCatching { primaryOutboundTag(nodeOutbounds) }.getOrNull() ?: return@forEachIndexed
-            }
-
-            nodeOutbounds.filterIsInstance<JsonObject>().forEach { outbound ->
-                outbounds += outbound.prefixTags(prefix, TAG_KEYS)
-            }
-            nodeBalancers?.filterIsInstance<JsonObject>()?.forEach { balancer ->
-                balancers += balancer.prefixTags(prefix, BALANCER_TAG_KEYS, BALANCER_SELECTOR_KEYS)
-            }
-
-            val inboundTag = prefix + "in"
-            inbounds += probeInbound(inboundTag, target.socksPort)
-            rules += buildJsonObject {
-                put("type", "field")
-                put("network", "tcp,udp")
-                putJsonArray("inboundTag") { add(inboundTag) }
-                if (balancerTag != null) {
-                    put("balancerTag", prefix + balancerTag)
-                } else {
-                    put("outboundTag", prefix + destination)
-                }
-            }
-
-            (root["burstObservatory"] as? JsonObject)?.let { block ->
-                if (observatory == null) observatory = block
-                (block["subjectSelector"] as? JsonArray)
-                    ?.mapNotNull { (it as? JsonPrimitive)?.contentOrNull }
-                    ?.forEach { observatorySubjects += prefix + it }
-            }
-
-            accepted += index
-        }
-
-        if (accepted.isEmpty()) throw XrayConfigException("no target in the batch had a usable outbound")
-
-        val merged = buildJsonObject {
-            environment(options)?.let { put("env", it) }
-            put("log", logBlock(options))
-            put("inbounds", JsonArray(inbounds))
-            put("outbounds", JsonArray(outbounds))
-            observatory?.let { block ->
-                // One observatory serves the whole batch; its subject selector is
-                // the union of the per-node selectors, already prefixed.
-                put(
-                    "burstObservatory",
-                    JsonObject(
-                        block.toMutableMap().apply {
-                            this["subjectSelector"] = JsonArray(observatorySubjects.map { JsonPrimitive(it) })
-                        },
-                    ),
-                )
-            }
-            putJsonObject("routing") {
-                put("domainStrategy", "AsIs")
-                if (balancers.isNotEmpty()) put("balancers", JsonArray(balancers))
-                put("rules", JsonArray(rules))
-            }
-        }
-        return BatchProbeConfig(merged.toString(), accepted)
-    }
-
-    private fun probeInbound(tag: String, port: Int): JsonObject = buildJsonObject {
-        put("tag", tag)
-        put("listen", "127.0.0.1")
-        put("port", port)
-        put("protocol", "socks")
-        putJsonObject("settings") {
-            put("auth", "noauth")
-            // A probe only makes one TCP request; UDP relay would be dead weight.
-            put("udp", false)
-        }
-    }
-
-    /**
-     * Namespaces the tag-shaped values of an object.
-     *
-     * [tagKeys] hold a single tag; [selectorKeys] hold an array of tag *prefixes*,
-     * which Xray matches against outbound tags — prefixing those the same way
-     * keeps them matching exactly the outbounds they matched before.
-     */
-    private fun JsonObject.prefixTags(
-        prefix: String,
-        tagKeys: Set<String>,
-        selectorKeys: Set<String> = emptySet(),
-    ): JsonObject = JsonObject(
-        toMutableMap().apply {
-            tagKeys.forEach { key ->
-                (this[key] as? JsonPrimitive)?.contentOrNull?.let { this[key] = JsonPrimitive(prefix + it) }
-            }
-            selectorKeys.forEach { key ->
-                (this[key] as? JsonArray)?.let { selectors ->
-                    this[key] = JsonArray(
-                        selectors.map { entry ->
-                            (entry as? JsonPrimitive)?.contentOrNull
-                                ?.let { JsonPrimitive(prefix + it) }
-                                ?: entry
-                        },
-                    )
-                }
-            }
-        },
-    )
 
     /**
      * The outbound a config is actually about. Panel configs always ship `direct`
@@ -385,7 +242,7 @@ object XrayConfigBuilder {
         val fallback = objects.firstOrNull { outbound ->
             val tag = (outbound["tag"] as? JsonPrimitive)?.contentOrNull
             val protocol = (outbound["protocol"] as? JsonPrimitive)?.contentOrNull
-            tag != DIRECT_TAG && tag != BLOCK_TAG && protocol !in setOf("freedom", "blackhole", "dns")
+            tag !in infrastructureTags && protocol !in infrastructureProtocols
         }
         return (fallback?.get("tag") as? JsonPrimitive)?.contentOrNull
             ?: throw XrayConfigException("config has no usable outbound")

@@ -2,9 +2,10 @@ package vpn.moonlight.ui
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.VisibilityThreshold
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -20,9 +21,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import vpn.moonlight.AppContainer
 import vpn.moonlight.R
@@ -37,7 +39,6 @@ import vpn.moonlight.ui.connect.ConnectScreen
 import vpn.moonlight.ui.connect.ConnectViewModel
 import vpn.moonlight.ui.importsub.ImportScreen
 import vpn.moonlight.ui.importsub.ImportViewModel
-import vpn.moonlight.ui.onboarding.OnboardingScreen
 import vpn.moonlight.ui.settings.SettingsScreen
 import vpn.moonlight.ui.settings.SettingsViewModel
 import vpn.moonlight.ui.split.SplitTunnelScreen
@@ -59,42 +60,13 @@ fun MoonlightApp(
     deepLink: DeepLink? = null,
     onDeepLinkHandled: () -> Unit = {},
 ) {
-    // Null until DataStore emits. Collecting with a default AppSettings() instead
-    // was the onboarding-every-launch bug: the default has onboardingComplete
-    // false, so the first frame routed to onboarding before the real value
-    // arrived, and the decision had already been made by then.
-    val settings by container.settingsStore.settings.collectAsStateWithLifecycle(
-        initialValue = null,
-    )
+    // The app opens on the connect screen. With no subscription yet, that
+    // screen is itself the way to add one, so there is no welcome to sit
+    // through first.
+    var currentRoute by rememberSaveable { mutableStateOf(Destination.Connect.route) }
 
-    var currentRoute by rememberSaveable { mutableStateOf<String?>(null) }
-
-    // Decided once, from loaded settings, and never revisited — so completing or
-    // re-showing onboarding stays under the user's control.
-    LaunchedEffect(settings) {
-        val loaded = settings ?: return@LaunchedEffect
-        if (currentRoute == null) {
-            currentRoute = if (loaded.onboardingComplete) {
-                Destination.Connect.route
-            } else {
-                Destination.Onboarding.route
-            }
-        }
-    }
-
-    val resolved = Destination.fromRoute(currentRoute)
-    if (resolved == null) {
-        // Settings still loading: paint the background rather than flashing a screen.
-        Box(
-            Modifier
-                .fillMaxSize()
-                .background(ml.colors.bg),
-        )
-        return
-    }
-    // Explicitly non-null: AnimatedContent infers its type parameter before the
-    // smart cast applies, which would leave the `when` below non-exhaustive.
-    val current: Destination = resolved
+    // A route saved by a version that still had other screens falls back here.
+    val current: Destination = Destination.fromRoute(currentRoute) ?: Destination.Connect
 
     // Without this, the system back gesture falls through to the activity and
     // closes the app from a pushed screen. Handled here rather than per screen so
@@ -102,10 +74,6 @@ fun MoonlightApp(
     val backTarget: Destination? = when (current) {
         Destination.SplitTunnel, Destination.Logs -> Destination.Settings
         Destination.Import -> Destination.Subscription
-        // Reached from Settings once onboarding is done; on a first run there is
-        // nowhere to go back to, so let back leave the app.
-        Destination.Onboarding ->
-            Destination.Settings.takeIf { settings?.onboardingComplete == true }
         // From a secondary tab, back returns to the first tab before exiting.
         Destination.Subscription, Destination.Settings -> Destination.Connect
         Destination.Connect -> null
@@ -119,6 +87,7 @@ fun MoonlightApp(
     var pendingImportUrl by remember { mutableStateOf<String?>(null) }
     var pendingConnect by remember { mutableStateOf(false) }
     val context = LocalContext.current
+    val density = LocalDensity.current
 
     LaunchedEffect(deepLink) {
         when (val link = deepLink) {
@@ -152,21 +121,19 @@ fun MoonlightApp(
     ) {
         AnimatedContent(
             targetState = current,
+            // How every page arrives: it fades in as it settles the last few
+            // points into place, on the one curve. The page it replaces just
+            // goes — nobody watches a page leave.
             transitionSpec = {
-                fadeIn(tween(MlMotion.DurEnter, easing = MlMotion.Ease)) togetherWith
-                    fadeOut(tween(MlMotion.DurEnter / 2, easing = MlMotion.Ease))
+                val rise = with(density) { MlMotion.RiseDistance.roundToPx() }
+                (
+                    fadeIn(MlMotion.enter()) +
+                        slideInVertically(MlMotion.enter(IntOffset.VisibilityThreshold)) { rise }
+                    ) togetherWith fadeOut(MlMotion.paint())
             },
             label = "screen",
         ) { destination ->
             when (destination) {
-                Destination.Onboarding -> OnboardingScreen(
-                    onAddSubscription = { currentRoute = Destination.Import.route },
-                    onSkip = {
-                        settingsViewModel.completeOnboarding()
-                        currentRoute = Destination.Connect.route
-                    },
-                )
-
                 Destination.Import -> {
                     val importViewModel: ImportViewModel =
                         viewModel(factory = ImportViewModel.factory(container))
@@ -194,7 +161,6 @@ fun MoonlightApp(
                 Destination.Settings -> SettingsScreen(
                     viewModel = settingsViewModel,
                     onOpenSplitTunnel = { currentRoute = Destination.SplitTunnel.route },
-                    onShowOnboarding = { currentRoute = Destination.Onboarding.route },
                     onOpenLogs = { currentRoute = Destination.Logs.route },
                 )
 

@@ -28,7 +28,6 @@ class SettingsStore(private val context: Context) {
         val splitMode = stringPreferencesKey("split_mode")
         val splitPackages = stringSetPreferencesKey("split_packages")
         val selectedNode = stringPreferencesKey("selected_node")
-        val onboardingComplete = booleanPreferencesKey("onboarding_complete")
         val hardwareId = stringPreferencesKey("hardware_id")
         val verboseLogging = booleanPreferencesKey("verbose_logging")
     }
@@ -43,7 +42,6 @@ class SettingsStore(private val context: Context) {
             selection = prefs[Keys.selectedNode]
                 ?.let { NodeSelection.Pinned(it) }
                 ?: NodeSelection.Auto,
-            onboardingComplete = prefs[Keys.onboardingComplete] ?: false,
             verboseLogging = prefs[Keys.verboseLogging] ?: false,
         )
     }
@@ -86,9 +84,6 @@ class SettingsStore(private val context: Context) {
     }
 
     suspend fun setVerboseLogging(enabled: Boolean) = edit { it[Keys.verboseLogging] = enabled }
-
-    suspend fun setOnboardingComplete(complete: Boolean) =
-        edit { it[Keys.onboardingComplete] = complete }
 
     private suspend fun edit(block: (androidx.datastore.preferences.core.MutablePreferences) -> Unit) {
         context.preferences.edit(block)

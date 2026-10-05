@@ -19,8 +19,8 @@ import vpn.moonlight.design.MlIcons
 import vpn.moonlight.design.ml
 
 /**
- * The workhorse list row: a category-filled icon tile, a title with an optional
- * sub-line, and a trailing affordance. Used across settings, subscription and
+ * The workhorse list row: a quiet grey tile with the glyph in the text colour, a
+ * title with an optional sub-line, and a trailing affordance. Used across settings, subscription and
  * import.
  */
 @Composable
@@ -46,7 +46,7 @@ fun MlNavRow(
             when {
                 leading != null -> leading()
                 icon != null && tileFill != null -> MlIconTile(tileFill) {
-                    MlIcon(icon, size = 19.dp, tint = ml.colors.textOnAccent)
+                    MlIcon(icon, size = 19.dp, tint = ml.colors.text)
                 }
             }
             Column(Modifier.weight(1f)) {

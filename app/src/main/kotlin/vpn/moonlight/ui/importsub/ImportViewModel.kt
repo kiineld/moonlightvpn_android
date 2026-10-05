@@ -65,7 +65,6 @@ class ImportViewModel(private val container: AppContainer) : ViewModel() {
         viewModelScope.launch {
             container.subscriptionRepository.import(url).fold(
                 onSuccess = { subscription ->
-                    container.settingsStore.setOnboardingComplete(true)
                     _state.update { it.copy(isSubmitting = false, imported = subscription) }
                     // Latency is measured straight away so `Auto` has something
                     // to choose from on the very first connect.

@@ -6,13 +6,11 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import vpn.moonlight.AppContainer
@@ -22,72 +20,77 @@ import vpn.moonlight.data.model.Latency
 import vpn.moonlight.data.model.NodeSelection
 import vpn.moonlight.data.model.ServerNode
 import vpn.moonlight.data.repository.RefreshState
-import vpn.moonlight.data.util.Formatters
 
 /** One row in the node list. */
 data class NodeRow(
     val node: ServerNode,
+    /** The last measurement, which stands until a newer one replaces it. */
     val latency: Latency,
+    /** A probe is out for this node right now. */
+    val isMeasuring: Boolean,
     val isSelected: Boolean,
 )
 
+/**
+ * Everything on the connect screen that changes when something *happens*.
+ *
+ * What changes every second — the connection time, the bytes this session — is
+ * deliberately not here. Both used to be: a ticker rebuilt this whole state
+ * once a second, connected or not, and the screen recomposed from the top with
+ * it, server list included, for as long as it was open. The time is now worked
+ * out by the one label that shows it, from [connectedSinceMillis], and the
+ * bytes arrive on [ConnectViewModel.sessionBytes] for the one cell that shows
+ * them.
+ */
 data class ConnectUiState(
     val connection: ConnectionState = ConnectionState.Disconnected,
     val nodes: List<NodeRow> = emptyList(),
+    /** The node the tunnel is on — or, with it down, the one it would connect to. */
     val activeNode: ServerNode? = null,
+    val activeLatency: Latency = Latency.Unknown,
+    val isActiveMeasuring: Boolean = false,
     val isAuto: Boolean = true,
-    val sessionSeconds: Long = 0L,
-    val sessionBytes: Long = 0L,
     val daysLeft: Int? = null,
     val isRefreshing: Boolean = false,
     val isMeasuring: Boolean = false,
     val isListExpanded: Boolean = false,
     val hasSubscription: Boolean = false,
-    val quotaRemainingFraction: Float? = null,
     val isPerpetual: Boolean = false,
 ) {
-    val timerText: String get() = Formatters.formatDuration(sessionSeconds)
+    /** When the tunnel came up, or null while it is not. */
+    val connectedSinceMillis: Long?
+        get() = (connection as? ConnectionState.Connected)?.sinceEpochMillis
 
     /**
-     * The dial sweep shows how much of the traffic quota is still available, so a
-     * healthy subscription reads as a nearly full ring and drains as it is used.
-     * Chosen over an animated or arbitrary value because the ring is the largest
-     * element on the screen and should mean something.
-     *
-     * With no quota to report (unlimited, or a panel that does not say), a
-     * connected tunnel shows a full ring and a stopped one shows none.
+     * Whether the list needs an Auto row of its own. When the panel publishes
+     * an "Auto" node, that row *is* the automatic choice — a second one beside
+     * it would be two rows doing the same job.
      */
-    val progress: Float
-        get() = when {
-            !connection.isActive -> 0f
-            quotaRemainingFraction != null -> quotaRemainingFraction
-            connection is ConnectionState.Connected -> 1f
-            else -> 0.08f
-        }
+    val showsAutoRow: Boolean get() = nodes.isNotEmpty() && nodes.none { it.node.isAutoNode }
 }
 
 class ConnectViewModel(private val container: AppContainer) : ViewModel() {
 
     private val listExpanded = MutableStateFlow(false)
 
-    /** Ticks only while a session is up, so an idle screen does not wake every second. */
-    private val ticker = flow {
-        while (true) {
-            emit(System.currentTimeMillis())
-            delay(1_000L)
-        }
-    }
-
     val state: StateFlow<ConnectUiState> = combine(
         container.settingsStore.settings,
         container.subscriptionRepository.subscription,
         container.latencyRepository.latencies,
-        container.latencyRepository.measuring,
+        container.latencyRepository.pending,
         VpnController.state,
-    ) { settings, subscription, latencies, measuring, connection ->
+    ) { settings, subscription, latencies, pending, connection ->
         val nodes = subscription?.nodes.orEmpty()
-        val isAuto = settings.selection is NodeSelection.Auto
-        val active = container.subscriptionRepository.resolve(settings.selection)
+        val selection = settings.selection
+        val isAuto = selection is NodeSelection.Auto
+
+        // While the tunnel is up, the node to show is the one it is on, not the
+        // one the selection would resolve to now. They part ways the moment a
+        // ping pass finishes with the tunnel up: `Auto` resolves to whichever
+        // node is fastest by the new figures, and naming that one would have
+        // the screen claim a server the traffic is not going through.
+        val inUse = connection.nodeIdOrNull?.let { id -> nodes.firstOrNull { it.id == id } }
+        val active = inUse ?: container.subscriptionRepository.resolve(selection)
 
         ConnectUiState(
             connection = connection,
@@ -95,15 +98,17 @@ class ConnectViewModel(private val container: AppContainer) : ViewModel() {
                 NodeRow(
                     node = node,
                     latency = latencies[node.id] ?: Latency.Unknown,
-                    isSelected = !isAuto && node.id == active?.id,
+                    isMeasuring = node.id in pending,
+                    isSelected = selection is NodeSelection.Pinned && node.id == selection.nodeId,
                 )
             },
             activeNode = active,
+            activeLatency = active?.let { latencies[it.id] } ?: Latency.Unknown,
+            isActiveMeasuring = active != null && active.id in pending,
             isAuto = isAuto,
-            isMeasuring = measuring,
+            isMeasuring = pending.isNotEmpty(),
             hasSubscription = subscription != null && nodes.isNotEmpty(),
             daysLeft = subscription?.userInfo?.daysLeft(System.currentTimeMillis() / 1000),
-            quotaRemainingFraction = subscription?.userInfo?.usedFraction?.let { 1f - it },
             isPerpetual = subscription?.userInfo?.isPerpetual == true,
         )
     }
@@ -111,18 +116,18 @@ class ConnectViewModel(private val container: AppContainer) : ViewModel() {
         .combine(container.subscriptionRepository.refreshState) { ui, refresh ->
             ui.copy(isRefreshing = refresh is RefreshState.Refreshing)
         }
-        .combine(ticker) { ui, now ->
-            val connected = ui.connection as? ConnectionState.Connected
-            ui.copy(
-                sessionSeconds = connected
-                    ?.let { Formatters.elapsedSeconds(it.sinceEpochMillis, now) }
-                    ?: 0L,
-            )
-        }
-        .combine(VpnController.counters) { ui, counters ->
-            ui.copy(sessionBytes = if (ui.connection is ConnectionState.Connected) counters.totalBytes else 0L)
-        }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), ConnectUiState())
+
+    /**
+     * Bytes through the tunnel this session.
+     *
+     * Collecting this is what makes the service poll the tunnel for it, so it is
+     * shared only while something is subscribed: with the screen off or the app
+     * in the background nothing asks, and nothing polls.
+     */
+    val sessionBytes: StateFlow<Long> = VpnController.counters
+        .map { it.totalBytes }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), 0L)
 
     fun toggleConnection(context: Context) = VpnController.toggle(context)
 
@@ -147,22 +152,15 @@ class ConnectViewModel(private val container: AppContainer) : ViewModel() {
     }
 
     /**
-     * A full pass needs the core to itself, so while the tunnel is up only the
-     * active node is measured — through the live proxy, which is the warm number
-     * that actually matters. Other rows keep their last measurement.
+     * Measures every node, tunnel up or down — the probe runs beside the tunnel
+     * rather than through it. Each row keeps the number it had until its new one
+     * lands.
      */
     fun measureLatency() {
-        if (container.latencyRepository.measuring.value) return
+        if (container.latencyRepository.pending.value.isNotEmpty()) return
         viewModelScope.launch {
-            val activePort = VpnController.socksPort.value
-            val activeNodeId = VpnController.state.value.nodeIdOrNull
-
-            if (activePort != null && activeNodeId != null) {
-                container.latencyProbe.measureActive(activeNodeId, activePort)
-            } else {
-                val nodes = container.subscriptionRepository.subscription.value?.nodes.orEmpty()
-                container.latencyProbe.measureAll(nodes)
-            }
+            val nodes = container.subscriptionRepository.subscription.value?.nodes.orEmpty()
+            container.latencyProbe.measureAll(nodes)
         }
     }
 

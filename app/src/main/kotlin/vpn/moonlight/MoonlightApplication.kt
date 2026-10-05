@@ -53,8 +53,10 @@ class MoonlightApplication : Application(), TunnelDependenciesProvider {
             XrayAssets.extract(this@MoonlightApplication)
 
             // The cached subscription is loaded before anything asks for it, so
-            // the first frame shows real nodes rather than an empty list.
+            // the first frame shows real nodes rather than an empty list — and
+            // each with the latency it last measured.
             container.subscriptionRepository.loadCached()
+            container.latencyRepository.restore()
         }
     }
 

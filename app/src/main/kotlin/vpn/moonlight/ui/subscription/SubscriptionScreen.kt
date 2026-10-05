@@ -5,12 +5,6 @@ import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
-import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -34,7 +28,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -64,6 +57,7 @@ import vpn.moonlight.design.components.MlPressable
 import vpn.moonlight.design.components.MlProgressBar
 import vpn.moonlight.design.components.MlText
 import vpn.moonlight.design.ml
+import vpn.moonlight.design.spinWhile
 import vpn.moonlight.ui.common.byteNumber
 import vpn.moonlight.ui.common.byteText
 import vpn.moonlight.ui.common.dateText
@@ -235,29 +229,27 @@ private fun ConfirmDeleteDialog(onConfirm: () -> Unit, onDismiss: () -> Unit) {
     }
 }
 
+/** The refresh glyph, turning while a fetch is in flight — and only then. */
 @Composable
 private fun SpinningRefresh(
     spinning: Boolean,
     size: androidx.compose.ui.unit.Dp,
     tint: androidx.compose.ui.graphics.Color = androidx.compose.ui.graphics.Color.Unspecified,
 ) {
-    val transition = rememberInfiniteTransition(label = "spin")
-    val angle by transition.animateFloat(
-        initialValue = 0f,
-        targetValue = 360f,
-        animationSpec = infiniteRepeatable(tween(900, easing = LinearEasing), RepeatMode.Restart),
-        label = "angle",
-    )
     MlIcon(
         MlIcons.RefreshCw,
-        Modifier.rotate(if (spinning) angle else 0f),
+        Modifier.spinWhile(spinning),
         size = size,
         tint = if (tint == androidx.compose.ui.graphics.Color.Unspecified) ml.colors.accentInk else tint,
         strokeWidth = 2.2f,
     )
 }
 
-/** The accent plan card, with the soft circular wash bleeding off its lower-right. */
+/**
+ * The plan card — the one inverted surface in the app: white on the black
+ * canvas, black on the white one. A soft circular wash bleeds off its
+ * lower-right.
+ */
 @Composable
 private fun PlanHero(
     planName: String,
@@ -414,9 +406,7 @@ private fun RefreshRow(state: SubscriptionUiState, onRefresh: () -> Unit) {
             trailing = null,
             leading = {
                 MlIconTile(ml.colors.cat1) {
-                    // Ink, not accent: the tile is already the accent colour, so
-                    // an accent glyph on it disappears entirely in dark mode.
-                    SpinningRefresh(state.isRefreshing, 19.dp, ml.colors.textOnAccent)
+                    SpinningRefresh(state.isRefreshing, 19.dp, ml.colors.text)
                 }
             },
         )

@@ -4,18 +4,31 @@ import androidx.compose.runtime.Immutable
 import androidx.compose.ui.graphics.Color
 
 /**
- * The Moonlight palette. Mirrors `tokens/colors.css`.
+ * The Moonlight palette — black and white, as on the Mac.
  *
- * The accent deliberately splits into three roles. In dark mode all three are
- * the same lime; in light mode they diverge, because acid lime on near-white
- * neither fills nor reads. Collapsing them would break light mode:
+ * The interface is monochrome: a black canvas, near-black surfaces told apart by
+ * a step of grey, white type, and white as the one interactive colour (black, in
+ * the light theme). Colour is spent in exactly two places — the logo's lime,
+ * which is the brand and appears nowhere else but on the moon it lights, and the
+ * small signals that carry meaning: latency, errors, warnings.
  *
- *  - [accent]     fills — buttons, the dial sweep, active pills
- *  - [accentInk]  accent as type or a glyph on a light surface
+ * The token names are the ones every screen was written against; what they
+ * resolve to is what changed. The accent still has three roles, because the
+ * screens still ask for them separately:
+ *
+ *  - [accent]     fills — buttons, the plan card, active pills
+ *  - [accentInk]  accent as type or a glyph on a surface
  *  - [accentLine] accent as a thin mark — bars, dots, hairlines, focus rings
+ *
+ * The canvas is true black. On the OLED panels most phones have, a black pixel
+ * is one that is switched off.
  */
 @Immutable
 data class MoonlightColors(
+    /** The logo's lime, and the lit moon. Nothing else. */
+    val brand: Color,
+    val brandInk: Color,
+
     val bg: Color,
     val bgDeep: Color,
     val surface: Color,
@@ -47,14 +60,17 @@ data class MoonlightColors(
     val info: Color,
     val heroGold: Color,
 
-    /** Category fills for icon tiles, avatars and tariff cards. */
+    /**
+     * Fills for the tile behind a row's glyph. All one quiet grey now; the glyph
+     * on it is drawn in [text], not [textOnAccent].
+     */
     val cat1: Color,
     val cat2: Color,
     val cat3: Color,
     val cat4: Color,
     val cat5: Color,
 
-    /** Latency / service severities. `*Ink` is the readable-on-page variant. */
+    /** Latency / service severities — the only colour in the interface proper. */
     val statusUpInk: Color,
     val statusDegradedInk: Color,
     val statusMaintenanceInk: Color,
@@ -66,129 +82,123 @@ data class MoonlightColors(
 ) {
     val categories: List<Color> get() = listOf(cat1, cat2, cat3, cat4, cat5)
 
-    /** The design colour-codes latency: green under 40 ms, amber under 100. */
+    /**
+     * Latency as a signal: fine, usable, slow. Tuned to what a tunnel out of
+     * Russia actually measures — the old 40/100 ms steps painted every server
+     * here the "slow" colour, which told nobody anything.
+     */
     fun latencyColor(ms: Int): Color = when {
         ms < 0 -> textMuted
-        ms < 40 -> statusUpInk
-        ms < 100 -> statusDegradedInk
+        ms < 150 -> statusUpInk
+        ms < 300 -> statusDegradedInk
         else -> statusPartialInk
     }
 }
 
 private val Lime = Color(0xFFD2FF1F)
-private val LimeDeep = Color(0xFFC2F015)
-private val Purple = Color(0xFFAB93E1)
-private val Yellow = Color(0xFFFFE078)
-private val Blue = Color(0xFFB6CAEB)
-private val Orange = Color(0xFFFB7A54)
-private val Red = Color(0xFFFF6B5A)
-
-private val Grey100 = Color(0xFFAEB7C7)
-private val Grey200 = Color(0xFF878EA8)
-private val Grey500 = Color(0xFF2A3547)
-private val Grey600 = Color(0xFF212B3B)
-private val Grey700 = Color(0xFF182131)
-private val Grey800 = Color(0xFF101828)
-private val Grey900 = Color(0xFF0B111E)
+private val Ink = Color(0xFF0A0A0A)
+private val Telegram = Color(0xFF29A0DA)
 
 val MoonlightDarkColors = MoonlightColors(
-    bg = Grey800,
-    bgDeep = Grey900,
-    surface = Grey700,
-    surface2 = Grey600,
-    surface3 = Grey500,
-    surfaceNav = Color(0xEB182131),
+    brand = Lime,
+    brandInk = Ink,
 
-    text = Color.White,
-    text2 = Grey100,
-    textMuted = Grey200,
-    textOnAccent = Grey800,
-    textLink = Lime,
+    bg = Color.Black,
+    bgDeep = Ink,
+    surface = Color(0xFF111111),
+    surface2 = Color(0xFF1A1A1A),
+    surface3 = Color(0xFF262626),
+    // A step above a card, so the floating bar still has an edge over one.
+    surfaceNav = Color(0xFF161616),
 
-    accent = Lime,
-    accentHover = LimeDeep,
-    accentQuiet = Lime.copy(alpha = 0.13f),
-    accentInk = Lime,
-    accentInkStrong = Lime,
-    accentLine = Lime,
+    text = Color(0xFFF5F5F5),
+    text2 = Color(0xFFA3A3A3),
+    textMuted = Color(0xFF737373),
+    textOnAccent = Color.Black,
+    textLink = Color(0xFFF5F5F5),
 
-    hairline = Color.White.copy(alpha = 0.09f),
-    hairlineSoft = Color.White.copy(alpha = 0.05f),
-    inkWash = Grey800.copy(alpha = 0.14f),
-    inkWashSoft = Grey800.copy(alpha = 0.06f),
+    accent = Color.White,
+    accentHover = Color(0xFFE5E5E5),
+    accentQuiet = Color.White.copy(alpha = 0.08f),
+    accentInk = Color.White,
+    accentInkStrong = Color.White,
+    accentLine = Color.White.copy(alpha = 0.6f),
 
-    danger = Red,
-    dangerQuiet = Red.copy(alpha = 0.13f),
-    warning = Yellow,
-    info = Blue,
-    heroGold = Color(0xFFEFAE2E),
+    hairline = Color.White.copy(alpha = 0.10f),
+    hairlineSoft = Color.White.copy(alpha = 0.06f),
+    inkWash = Color.Black.copy(alpha = 0.10f),
+    inkWashSoft = Color.Black.copy(alpha = 0.05f),
 
-    cat1 = Lime,
-    cat2 = Purple,
-    cat3 = Blue,
-    cat4 = Yellow,
-    cat5 = Orange,
+    danger = Color(0xFFFF453A),
+    dangerQuiet = Color(0xFFFF453A).copy(alpha = 0.14f),
+    warning = Color(0xFFFFD60A),
+    info = Color(0xFFA3A3A3),
+    heroGold = Color.White,
 
-    statusUpInk = Lime,
-    statusDegradedInk = Yellow,
-    statusMaintenanceInk = Blue,
-    statusPartialInk = Orange,
-    statusDownInk = Red,
+    cat1 = Color(0xFF1F1F1F),
+    cat2 = Color(0xFF1F1F1F),
+    cat3 = Color(0xFF1F1F1F),
+    cat4 = Color(0xFF1F1F1F),
+    cat5 = Color(0xFF1F1F1F),
 
-    telegram = Color(0xFF29A0DA),
+    statusUpInk = Color(0xFF30D158),
+    statusDegradedInk = Color(0xFFFFD60A),
+    statusMaintenanceInk = Color(0xFFA3A3A3),
+    statusPartialInk = Color(0xFFFF9F0A),
+    statusDownInk = Color(0xFFFF453A),
+
+    telegram = Telegram,
     isLight = false,
 )
 
-/**
- * Same system, flipped, with two deliberate departures from a mechanical
- * inversion: the accent becomes yellow rather than lime, and the category fills
- * keep their dark-theme hues because ink on a dark purple slab fails contrast.
- */
+/** The same system inverted: a white canvas, black as the interactive colour. */
 val MoonlightLightColors = MoonlightColors(
-    bg = Color(0xFFF2F3ED),
-    bgDeep = Color(0xFFE6E8DF),
-    surface = Color.White,
-    surface2 = Color(0xFFF1F3EB),
-    surface3 = Color(0xFFE1E4D9),
-    surfaceNav = Color(0xEBFFFFFF),
+    brand = Lime,
+    brandInk = Ink,
 
-    text = Grey800,
-    text2 = Color(0xFF475467),
-    textMuted = Color(0xFF667085),
-    textOnAccent = Grey800,
-    textLink = Color(0xFF7A5600),
+    bg = Color.White,
+    bgDeep = Color(0xFFFAFAFA),
+    surface = Color(0xFFF5F5F5),
+    surface2 = Color(0xFFEDEDED),
+    surface3 = Color(0xFFE0E0E0),
+    surfaceNav = Color(0xFFF0F0F0),
 
-    accent = Yellow,
-    accentHover = Color(0xFFF5CE52),
-    accentQuiet = Color(0xFFB07908).copy(alpha = 0.16f),
-    accentInk = Color(0xFFEFAE2E),
-    accentInkStrong = Color(0xFF6B4A00),
-    accentLine = Color(0xFFEFAE2E),
+    text = Ink,
+    text2 = Color(0xFF525252),
+    textMuted = Color(0xFF8A8A8A),
+    textOnAccent = Color.White,
+    textLink = Ink,
 
-    hairline = Grey800.copy(alpha = 0.11f),
-    hairlineSoft = Grey800.copy(alpha = 0.06f),
-    inkWash = Grey800.copy(alpha = 0.14f),
-    inkWashSoft = Grey800.copy(alpha = 0.06f),
+    accent = Ink,
+    accentHover = Color(0xFF262626),
+    accentQuiet = Color.Black.copy(alpha = 0.06f),
+    accentInk = Ink,
+    accentInkStrong = Ink,
+    accentLine = Color.Black.copy(alpha = 0.5f),
 
-    danger = Color(0xFFB42318),
-    dangerQuiet = Red.copy(alpha = 0.13f),
-    warning = Color(0xFF9A6A00),
-    info = Blue,
-    heroGold = Yellow,
+    hairline = Color.Black.copy(alpha = 0.10f),
+    hairlineSoft = Color.Black.copy(alpha = 0.06f),
+    inkWash = Color.White.copy(alpha = 0.16f),
+    inkWashSoft = Color.White.copy(alpha = 0.08f),
 
-    cat1 = Yellow,
-    cat2 = Purple,
-    cat3 = Blue,
-    // Deepened so the yellow category stays distinct from the now-yellow accent.
-    cat4 = Color(0xFFEFAE2E),
-    cat5 = Orange,
+    danger = Color(0xFFD70015),
+    dangerQuiet = Color(0xFFD70015).copy(alpha = 0.10f),
+    warning = Color(0xFFB58900),
+    info = Color(0xFF525252),
+    heroGold = Ink,
 
-    statusUpInk = Color(0xFF4C7A0F),
-    statusDegradedInk = Color(0xFF9A6A00),
-    statusMaintenanceInk = Color(0xFF3D6392),
+    cat1 = Color(0xFFEDEDED),
+    cat2 = Color(0xFFEDEDED),
+    cat3 = Color(0xFFEDEDED),
+    cat4 = Color(0xFFEDEDED),
+    cat5 = Color(0xFFEDEDED),
+
+    statusUpInk = Color(0xFF248A3D),
+    statusDegradedInk = Color(0xFFB58900),
+    statusMaintenanceInk = Color(0xFF525252),
     statusPartialInk = Color(0xFFC2410C),
-    statusDownInk = Color(0xFFB42318),
+    statusDownInk = Color(0xFFD70015),
 
-    telegram = Color(0xFF29A0DA),
+    telegram = Telegram,
     isLight = true,
 )

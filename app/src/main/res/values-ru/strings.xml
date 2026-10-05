@@ -1,17 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Onboarding -->
-    <string name="onboarding_title">Интернет\nбез границ</string>
-    <string name="onboarding_subtitle">Подключение в одно касание. Подписка из бота или личного кабинета работает здесь без настроек.</string>
-    <string name="onboarding_feature_tap_title">Одно касание</string>
-    <string name="onboarding_feature_tap_sub">Автовыбор ближайшего узла</string>
-    <string name="onboarding_feature_devices_title">До 5 устройств</string>
-    <string name="onboarding_feature_devices_sub">Одна подписка на телефон, планшет и ноутбук</string>
-    <string name="onboarding_feature_reality_title">VLESS Reality</string>
-    <string name="onboarding_feature_reality_sub">Ключи хранятся только на устройстве</string>
-    <string name="onboarding_add_subscription">Добавить подписку</string>
-    <string name="onboarding_later">Позже</string>
-
     <!-- Import -->
     <string name="import_title">Подписка</string>
     <string name="import_hint">Отсканируйте QR-код из бота или личного кабинета — либо вставьте ссылку подписки.</string>
@@ -42,14 +30,11 @@
     <string name="connect_refresh">Обновить</string>
     <string name="connect_refresh_subscription">Обновить</string>
     <string name="connect_refreshing">Обновление</string>
-    <string name="connect_status_protected">Защищено</string>
-    <string name="connect_status_disconnected">Не защищено</string>
     <string name="connect_status_connecting">Подключение</string>
     <string name="connect_status_reconnecting">Переподключение</string>
     <string name="connect_status_error">Ошибка</string>
     <string name="connect_big_connected">Подключено</string>
     <string name="connect_big_connect">Отключено</string>
-    <string name="connect_big_connecting">Соединение</string>
     <string name="connect_hint_tap_disconnect">нажмите, чтобы отключить</string>
     <string name="connect_hint_tap_connect">нажмите, чтобы подключиться</string>
     <string name="connect_hint_connecting">поднимаем туннель…</string>
@@ -61,8 +46,11 @@
     <string name="connect_auto_prefix">Авто · %1$s</string>
     <string name="connect_no_subscription">Подписки пока нет</string>
     <string name="connect_no_subscription_sub">Добавьте её, чтобы начать</string>
-    <string name="connect_measuring">замер…</string>
     <string name="connect_latency_ms">%1$d ms</string>
+    <string name="connect_connection_time">Время подключения</string>
+    <string name="connect_servers">СЕРВЕРЫ</string>
+    <string name="connect_auto_sub">Ближайший узел по пингу</string>
+    <string name="connect_auto_picked">Выбран %1$s</string>
 
     <!-- Connection errors -->
     <string name="error_no_subscription">Сначала добавьте подписку</string>
@@ -129,7 +117,7 @@
     <string name="settings_support">Поддержка</string>
     <string name="settings_support_sub">Мы на связи 24/7</string>
     <string name="settings_about">О приложении</string>
-    <string name="settings_about_sub">Версия %1$s · показать приветствие</string>
+    <string name="settings_about_sub">Версия %1$s</string>
     <string name="settings_core_version">Xray-core %1$s</string>
 
     <!-- Split tunnelling -->

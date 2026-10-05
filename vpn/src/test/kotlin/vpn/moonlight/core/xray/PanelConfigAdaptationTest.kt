@@ -55,13 +55,10 @@ class PanelConfigAdaptationTest {
             ),
         ) as JsonObject
 
-    private fun probe(port: Int = 10810) =
-        json.parseToJsonElement(
-            XrayConfigBuilder.probeConfig(
-                panelConfig,
-                XrayConfigOptions(socksPort = port, assetDir = assetDir),
-            ),
-        ) as JsonObject
+    private fun ping(config: String = panelConfig) = XrayConfigBuilder.pingConfig(config)
+
+    private fun PingConfig.root() =
+        this@PanelConfigAdaptationTest.json.parseToJsonElement(this.json) as JsonObject
 
     private fun JsonObject.array(key: String) = this[key] as JsonArray
     private fun JsonObject.obj(key: String) = this[key] as JsonObject
@@ -103,11 +100,6 @@ class PanelConfigAdaptationTest {
         // libXray's docs are explicit: runtime options belong in the config.
         val env = tunnel().obj("env")
         assertEquals(assetDir, env.str("xray.location.asset"))
-    }
-
-    @Test
-    fun `a probe config carries the asset location too`() {
-        assertEquals(assetDir, probe().obj("env").str("xray.location.asset"))
     }
 
     @Test
@@ -157,7 +149,6 @@ class PanelConfigAdaptationTest {
         // One line per connection including the destination host — not something
         // to put in a file the user is encouraged to send to someone else.
         assertEquals("none", tunnel().obj("log").str("access"))
-        assertEquals("none", probe().obj("log").str("access"))
     }
 
     @Test
@@ -179,41 +170,82 @@ class PanelConfigAdaptationTest {
     }
 
     @Test
-    fun `the probe config drops dns and geo rules so no geodata is loaded`() {
-        val config = probe()
+    fun `a ping config is the outbounds and nothing else, so no geodata is loaded`() {
+        val config = ping().root()
 
-        // Loading 22 MB of geoip for each of two dozen short-lived probe
-        // instances would dominate the measurement it is supposed to take.
-        assertFalse(config.containsKey("dns"))
+        // The core's probe dials through an outbound directly. Routing rules
+        // would mean loading 22 MB of geodata to time one request.
+        assertEquals(setOf("outbounds"), config.keys)
+        assertEquals(4, config.array("outbounds").size)
         val text = config.toString()
         assertFalse(text.contains("geosite:"))
         assertFalse(text.contains("geoip:"))
-        assertEquals("AsIs", config.obj("routing").str("domainStrategy"))
     }
 
     @Test
-    fun `the probe config keeps the balancer, because that is what it measures`() {
-        val config = probe()
-        assertEquals("Balancer_direct", (config.obj("routing").array("balancers")[0] as JsonObject).str("tag"))
-        assertTrue(config.containsKey("burstObservatory"))
-
-        val rules = config.obj("routing").array("rules")
-        assertEquals(1, rules.size)
-        assertEquals("Balancer_direct", (rules[0] as JsonObject).str("balancerTag"))
-        assertNull((rules[0] as JsonObject).str("outboundTag"))
+    fun `a balancer node is timed through every outbound its balancer chooses between`() {
+        // The selector is a tag prefix: "proxy" covers proxy and proxy-2, and
+        // never direct or block.
+        assertEquals(listOf("proxy", "proxy-2"), ping().tags)
     }
 
     @Test
-    fun `a probe config without a balancer routes straight to the proxy outbound`() {
-        val single = """
-            {"outbounds":[{"tag":"proxy","protocol":"vless"},{"tag":"direct","protocol":"freedom"}]}
+    fun `a balancer's members are whatever its selector matches, as in the core`() {
+        // Found on the emulator: a member was dropped for being a `freedom`
+        // outbound, so a balancer whose only live member it was read n/a.
+        // Xray matches the selector against tags and asks nothing else.
+        val config = """
+            {"routing":{"balancers":[{"tag":"b","selector":["proxy"]}]},
+             "outbounds":[{"tag":"proxy-1","protocol":"vless"},{"tag":"proxy-2","protocol":"freedom"},
+                          {"tag":"direct","protocol":"freedom"}]}
         """.trimIndent()
-        val config = json.parseToJsonElement(
-            XrayConfigBuilder.probeConfig(single, XrayConfigOptions(socksPort = 1080)),
-        ) as JsonObject
 
-        val rule = config.obj("routing").array("rules")[0] as JsonObject
-        assertEquals("proxy", rule.str("outboundTag"))
+        assertEquals(listOf("proxy-1", "proxy-2"), ping(config).tags)
+    }
+
+    @Test
+    fun `a balancer with a dozen members is timed through as many as the core takes at once`() {
+        val members = (1..12).joinToString(",") { """{"tag":"proxy-$it","protocol":"vless"}""" }
+        val config = """
+            {"routing":{"balancers":[{"tag":"b","selector":["proxy"]}]},
+             "outbounds":[$members,{"tag":"direct","protocol":"freedom"}]}
+        """.trimIndent()
+
+        assertEquals((1..MAX_PING_BATCH).map { "proxy-$it" }, ping(config).tags)
+    }
+
+    @Test
+    fun `a node without a balancer is timed through its proxy outbound`() {
+        val single = """
+            {"outbounds":[{"tag":"direct","protocol":"freedom"},{"tag":"proxy","protocol":"vless"}]}
+        """.trimIndent()
+
+        assertEquals(listOf("proxy"), ping(single).tags)
+    }
+
+    @Test
+    fun `a balancer that selects nothing falls back to the primary outbound`() {
+        val config = """
+            {"routing":{"balancers":[{"tag":"b","selector":["nothing-"]}]},
+             "outbounds":[{"tag":"mynode","protocol":"trojan"},{"tag":"direct","protocol":"freedom"}]}
+        """.trimIndent()
+
+        assertEquals(listOf("mynode"), ping(config).tags)
+    }
+
+    @Test
+    fun `a share link is timed through its one outbound, without the remark the core leaves in it`() {
+        // The core stores the node's display name in sendThrough; left in place
+        // it is parsed as a bind address and the outbound is refused.
+        val converted = """
+            {"outbounds":[{"tag":"x","protocol":"vless","sendThrough":"🇳🇱 Amsterdam"}]}
+        """.trimIndent()
+        val config = XrayConfigBuilder.pingConfigFromShareLink(converted)
+
+        assertEquals(listOf("proxy"), config.tags)
+        val outbound = config.root().array("outbounds")[0] as JsonObject
+        assertEquals("proxy", outbound.str("tag"))
+        assertNull(outbound["sendThrough"])
     }
 
     @Test
@@ -231,7 +263,7 @@ class PanelConfigAdaptationTest {
             runCatching { XrayConfigBuilder.fromPanelConfig(bad, XrayConfigOptions(socksPort = 1)) }
                 .onSuccess { org.junit.Assert.fail("expected failure for: $bad") }
                 .onFailure { assertTrue(it is XrayConfigException) }
-            runCatching { XrayConfigBuilder.probeConfig(bad, XrayConfigOptions(socksPort = 1)) }
+            runCatching { XrayConfigBuilder.pingConfig(bad) }
                 .onSuccess { org.junit.Assert.fail("expected failure for: $bad") }
                 .onFailure { assertTrue(it is XrayConfigException) }
         }

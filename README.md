@@ -171,16 +171,25 @@ cannot resolve. Two ordering constraints, in `XrayAssets`:
 `GET <subscriptionUrl>` with the Remnawave device headers:
 
 ```
-x-hwid: <random UUID, minted once, stored in DataStore>
+x-hwid: <salted SHA-256 of ANDROID_ID, laid out as a UUID>
 x-device-os: Android
 x-ver-os: <Build.VERSION.RELEASE>
 x-device-model: <manufacturer> <model>
 ```
 
-The HWID is a **random UUID, not a hardware identifier**. It still gives the
-panel a stable per-install handle for its device limit, but carries no hardware
-identity off the device. Clearing app data mints a new one, which is the right
-trade.
+The HWID is **derived from the device**: `ANDROID_ID`, hashed with this app's
+salt and laid out as a UUID (`HardwareId`, the same scheme as the macOS client).
+Android keeps `ANDROID_ID` per device, per user and per signing key, and it
+survives everything short of a factory reset — so the panel counts one phone as
+one device however often the app is reinstalled. The identifier itself never
+leaves the device; only its hash does.
+
+It used to be a random UUID minted on first launch and stored in DataStore,
+which every reinstall and every cleared-data minted afresh, each taking another
+slot of the device limit. That is now only the fallback for a device whose
+`ANDROID_ID` cannot be read. Because the signing key is part of what
+`ANDROID_ID` is scoped to, a locally signed build and a release build of the
+same app are two devices to the panel; builds signed with the same key are one.
 
 Four body shapes are accepted, detected by content rather than `Content-Type`
 (panels mislabel it): Remnawave JSON, a bare JSON array, base64 (standard or
@@ -191,37 +200,68 @@ as "unknown" rather than zero.
 
 ## Latency probing
 
-libXray's own `ping` builds its HTTP transport with `DisableKeepAlives: true`, so
-every probe pays a fresh TCP and TLS/Reality handshake and reports the sum — a
-number about handshake cost, not about the latency you experience once connected.
-It also caps a batch at 5 configs and fails an oversized batch whole.
+`LatencyProbe` measures every node with libXray's `pingBatch`, **whether or not
+the tunnel is up**.
 
-`WarmLatencyProbe` measures differently: one throwaway request establishes the
-connection, then two timed requests reuse it and the lower is reported.
+`pingBatch` builds an instance of its own from the outbounds alone — no
+inbounds, no routing, so no geodata — and dials through each outbound directly.
+It is not the global core `RunXray` manages, so it neither needs nor disturbs
+the instance carrying the tunnel. The probe used to borrow that global core
+(each node on its own SOCKS inbound of a merged config), which meant a full pass
+could only run with the tunnel down; once connected, the Ping button measured
+the node in use and left every other row as it was.
 
-libXray keeps a single global core (`RunXray` returns `ErrAlreadyRunning`), so
-the core — not the network — is what makes a pass slow. Nodes are therefore
-measured in batches of 8 **through one instance**: each node gets its own SOCKS
-inbound, and a routing rule pins that inbound to that node's own outbound or
-balancer, so the measurements run concurrently. Every tag is namespaced per node
-(`p3_proxy`), because panel configs reuse `proxy`/`direct`/`block` and an
-unprefixed merge would route one node's probe through another's outbound —
-a wrong number rather than an obvious error. Balancer selectors and the
-observatory's subject selector are prefix matchers over those tags, so they take
-the same prefix. A config that cannot be merged falls back to its own instance.
+Each node is one `pingBatch` call, eight nodes at a time, and its result is
+published the moment it lands. A plain node is timed through its primary
+outbound. A balancer node is timed through the outbounds its balancer selects
+between — up to five, the most one batch takes — and is as fast as its fastest,
+since that is where the balancer sends traffic.
 
-A full pass is only possible while the tunnel is down. While it is up, only the
-active node is measured — through the live SOCKS port, which this app can reach
-because it excludes itself from its own tunnel.
+The figure is a fresh connection: the handshake with the node and one request
+through it, to `http://cp.cloudflare.com/generate_204` with a five second
+timeout — the same target and timeout as the macOS client, so one server reads
+the same on both. Plain http on purpose: a TLS handshake to the *target* is a
+round trip that says nothing about the node. The colour steps are the Mac's too:
+under 150 ms, under 300 ms, slower.
 
-Connecting **interrupts** a pass rather than queuing behind it: `claimForTunnel`
-cancels the pass and its in-flight requests, so the tunnel waits for a core stop
-rather than for the node being measured, which for an unreachable node meant the
-full probe timeout.
+**A measurement stays until a newer one replaces it.** Starting a pass blanks
+nothing: a row being measured shows its last figure, dimmed, until the new one
+arrives, and a node that did not answer reads `n/a` rather than looking never
+checked. The figures are written to `files/latencies.json` at the end of a pass
+and read back at launch, so they outlive the process; a subscription refresh
+drops only those of nodes that are gone.
 
-Probe configs are stripped to outbounds, balancers and the observatory, with DNS
-and geo rules dropped, so two dozen short-lived instances do not each re-parse
-22 MB of geoip.
+The outbounds are handed to the core as files, which carry the node's
+credentials: they are written to the app's private cache and deleted as soon as
+the core has read them.
+
+The core keeps the socket-protect callback for the life of the process and
+fails any dial it returns false for. `VpnService.protect` is honoured only for
+the app currently holding the VPN, so with the tunnel down a refusal is not
+treated as one — there is no tunnel of ours to stay out of.
+
+## Battery
+
+The tunnel is up for hours, mostly with the screen off, so nothing about it may
+be unconditional.
+
+- **Traffic counters are polled only while something is showing them.** The
+  service watches the counter flow's subscription count; with the connect screen
+  off, nothing asks and nothing polls. It used to be a wake-up every second for
+  the whole session.
+- **The connection time ticks in the label that shows it**, from the timestamp
+  the session started, and only while the screen is at least started. It used
+  to be a ticker that rebuilt the whole screen's state once a second, connected
+  or not.
+- **No animation runs unless something is changing.** The old dial's halo
+  redrew every frame for as long as the screen was up, and every spinner kept a
+  repeating animation alive while idle. The moon is drawn once per state; the
+  orbit and the spinners exist only while something is in flight.
+- **The core's log is trimmed only at debug level**, the one level at which it
+  grows. At the default it was being measured twice a minute for nothing.
+- **A latency pass starts no core and loads no geodata**, and runs only when
+  asked for — on a tap, or once after importing a subscription.
+- **The canvas is true black**, which on an OLED panel is pixels switched off.
 
 ## Split tunnelling
 
@@ -238,13 +278,27 @@ rather than as a configuration choice.
 
 ## Design system
 
-Tokens map one-for-one from the source CSS. Dark is lime `#D2FF1F` on slate
-`#101828`; light flips the accent to yellow `#FFE078`. The accent deliberately
-splits into three roles that must stay distinct, because light mode depends on it:
+Black and white, as on the Mac. A black canvas, near-black surfaces told apart
+by a step of grey and a hairline, white type, and white as the one interactive
+colour — black, in the light theme. Colour is spent in two places only: the
+logo's lime `#D2FF1F`, which is the brand, and the small signals that carry
+meaning — latency, errors, warnings.
 
-- `accent` — fills (buttons, dial sweep, active pills)
-- `accentInk` — accent as type or a glyph (`#EFAE2E` in light)
+The token names are the ones every screen was written against; what they resolve
+to is what changed. The accent keeps its three roles:
+
+- `accent` — fills (buttons, the plan card, active pills)
+- `accentInk` — accent as type or a glyph
 - `accentLine` — accent as a thin mark (bars, dots, rings)
+
+The tile behind a row's glyph is one quiet grey, and the glyph on it is drawn in
+`text` — `textOnAccent` is for accent fills only. A switch's knob is the opposite
+of its track: the accent is white in the dark theme, and a white knob on a white
+track is a switch with no knob.
+
+Everything that moves is on one spring (`MlMotion.standard`, the Mac's
+`spring(response: 0.5, dampingFraction: 0.9)`), with no overshoot; colour and
+press changes use one short fade.
 
 Icons are **lucide 0.468.0**, the set the design is drawn with, carried across as
 raw SVG path data (`design/.../Icons.kt`) rather than redrawn or swapped for
@@ -255,9 +309,11 @@ Fonts are Onest (UI/body) and Unbounded (display) as variable TTFs from Google
 Fonts — the design ships `woff2`, which Android cannot load. Weights are named
 instances on the `wght` axis.
 
-The connect dial's ring shows **how much traffic quota is left**, so a healthy
-subscription reads as a nearly full ring and drains with use. With no quota to
-report, a connected tunnel shows a full ring.
+The connect control is **the moon from the logo**: a dim crescent with its two
+stars when off, a full moon lit in the logo's lime when on, and a thin orbit
+turning round it while the tunnel changes state. Above it is the connection
+time, below it the state in words. Opening the server list shrinks the moon and
+gives the list the room that frees.
 
 ## Localisation
 

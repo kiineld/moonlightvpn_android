@@ -50,6 +50,9 @@ class SubscriptionRepository(
         result.fold(
             onSuccess = {
                 store.save(it)
+                // A node's last latency stays with it across a refresh; only
+                // those of nodes that are gone are dropped.
+                latencies.retainOnly(it.nodes.map { node -> node.id })
                 _refreshState.value = RefreshState.Done(System.currentTimeMillis())
             },
             onFailure = { _refreshState.value = RefreshState.Failed(it) },

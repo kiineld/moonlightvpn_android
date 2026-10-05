@@ -18,6 +18,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import vpn.moonlight.design.MlIcon
@@ -58,27 +61,12 @@ fun MlPrimaryButton(
     }
 }
 
-/** The quiet secondary action under a CTA — no fill, muted label. */
-@Composable
-fun MlGhostButton(
-    label: String,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    val source = rememberPressSource()
-    Box(
-        modifier
-            .fillMaxWidth()
-            .height(48.dp)
-            .clip(MlShape.Pill)
-            .clickable(source, indication = null, onClick = onClick),
-        contentAlignment = Alignment.Center,
-    ) {
-        MlText(label, ml.type.bodySmTitle, color = ml.colors.textMuted)
-    }
-}
-
-/** A circular icon button, as used for back and refresh. */
+/**
+ * A circular icon button, as used for back, ping and refresh.
+ *
+ * @param label what it does, for a screen reader — the button has no text of
+ *  its own to be read.
+ */
 @Composable
 fun MlIconButton(
     icon: MlIconSpec,
@@ -89,16 +77,28 @@ fun MlIconButton(
     strokeWidth: Float = 2.2f,
     background: Color = Color.Unspecified,
     tint: Color = Color.Unspecified,
+    enabled: Boolean = true,
+    label: String? = null,
     content: @Composable (() -> Unit)? = null,
 ) {
     val source = rememberPressSource()
     Box(
         modifier
             .size(size)
-            .pressScale(source, MlMotion.PressIcon)
+            .pressScale(source, MlMotion.PressIcon, enabled)
             .clip(MlShape.Pill)
             .background(if (background == Color.Unspecified) ml.colors.surface2 else background)
-            .clickable(source, indication = null, onClick = onClick),
+            .clickable(
+                interactionSource = source,
+                indication = null,
+                enabled = enabled,
+                role = Role.Button,
+                onClickLabel = label,
+                onClick = onClick,
+            )
+            .then(
+                if (label != null) Modifier.semantics { contentDescription = label } else Modifier,
+            ),
         contentAlignment = Alignment.Center,
     ) {
         if (content != null) {

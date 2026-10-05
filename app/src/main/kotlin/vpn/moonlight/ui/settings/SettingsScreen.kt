@@ -54,7 +54,6 @@ import vpn.moonlight.update.ApkInstaller
 fun SettingsScreen(
     viewModel: SettingsViewModel,
     onOpenSplitTunnel: () -> Unit,
-    onShowOnboarding: () -> Unit,
     onOpenLogs: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -202,10 +201,8 @@ fun SettingsScreen(
                     MlNavRow(
                         title = stringResource(R.string.settings_about),
                         subtitle = stringResource(R.string.settings_about_sub, BuildConfig.VERSION_NAME),
-                        onClick = {
-                            viewModel.resetOnboarding()
-                            onShowOnboarding()
-                        },
+                        onClick = null,
+                        trailing = null,
                         leading = {
                             MlIconTile(ml.colors.surface2) {
                                 MlIcon(MlIcons.Info, size = 19.dp, tint = ml.colors.accentInk)

@@ -1,8 +1,11 @@
 package vpn.moonlight.core
 
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
 import vpn.moonlight.core.tunnel.TunnelCounters
 import vpn.moonlight.data.model.ConnectionState
 
@@ -24,24 +27,19 @@ object TunnelState {
     /** Cumulative byte and packet counters for the current session. */
     val counters: StateFlow<TunnelCounters> = _counters.asStateFlow()
 
-    private val _socksPort = MutableStateFlow<Int?>(null)
-
     /**
-     * The port the running core's SOCKS inbound listens on. Exposed so the latency
-     * probe can measure the active node through the live tunnel — this app is
-     * excluded from its own tunnel, so it can reach the loopback proxy directly.
+     * Whether anything is reading [counters] — in practice, whether the connect
+     * screen is on. The service polls the tunnel for them only while this is
+     * true: a counter nobody is looking at is not worth waking the processor
+     * for once a second, for as long as the tunnel is up.
      */
-    val socksPort: StateFlow<Int?> = _socksPort.asStateFlow()
-
-    internal fun updateSocksPort(port: Int?) {
-        _socksPort.value = port
-    }
+    internal val countersWatched: Flow<Boolean> =
+        _counters.subscriptionCount.map { it > 0 }.distinctUntilChanged()
 
     internal fun update(state: ConnectionState) {
         _state.value = state
         if (state !is ConnectionState.Connected) {
             _counters.value = TunnelCounters(0, 0, 0, 0)
-            if (!state.isActive) _socksPort.value = null
         }
     }
 

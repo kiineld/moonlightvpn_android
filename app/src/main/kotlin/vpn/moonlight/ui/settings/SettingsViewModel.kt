@@ -62,14 +62,6 @@ class SettingsViewModel(private val container: AppContainer) : ViewModel() {
         viewModelScope.launch { container.settingsStore.setSplitMode(mode) }
     }
 
-    fun resetOnboarding() {
-        viewModelScope.launch { container.settingsStore.setOnboardingComplete(false) }
-    }
-
-    fun completeOnboarding() {
-        viewModelScope.launch { container.settingsStore.setOnboardingComplete(true) }
-    }
-
     fun coreVersion(): String = container.xrayCore.version()
 
     val updateState: StateFlow<UpdateState> = container.updateRepository.state

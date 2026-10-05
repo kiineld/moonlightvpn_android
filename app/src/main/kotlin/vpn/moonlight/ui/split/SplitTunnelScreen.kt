@@ -259,7 +259,7 @@ private fun AppIcon(row: AppRow, loader: AppIconLoader) {
             MlText(
                 row.app.label.take(1).uppercase(),
                 ml.type.lead.copy(fontSize = ml.type.bodyTitle.fontSize),
-                color = ml.colors.textOnAccent,
+                color = ml.colors.text2,
             )
         }
     }

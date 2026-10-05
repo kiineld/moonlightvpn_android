@@ -1,6 +1,7 @@
 package vpn.moonlight.design.components
 
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.VisibilityThreshold
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -19,6 +20,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.Role
@@ -30,8 +32,10 @@ import vpn.moonlight.design.ml
 import vpn.moonlight.design.rememberPressSource
 
 /**
- * The 44×26 toggle. The knob slides on the overshoot curve; the track paints on
- * the calm one, exactly as in the design.
+ * The 44×26 toggle — the one switch in the system.
+ *
+ * The knob is the opposite of its track. The accent is white in the dark theme,
+ * and a white knob on a white track is a switch with no knob.
  */
 @Composable
 fun MlSwitch(
@@ -41,18 +45,26 @@ fun MlSwitch(
     enabled: Boolean = true,
 ) {
     val track by animateColorAsState(
-        if (checked) ml.colors.accent else ml.colors.surface3,
+        // A translucent ink rather than a solid grey when off, so the track
+        // reads on a card and on the canvas alike.
+        if (checked) ml.colors.accent else ml.colors.text.copy(alpha = 0.12f),
         MlMotion.paint(),
         label = "switchTrack",
     )
+    val knob by animateColorAsState(
+        if (checked) ml.colors.textOnAccent else ml.colors.text,
+        MlMotion.paint(),
+        label = "switchKnobColor",
+    )
     val knobOffset by animateDpAsState(
         if (checked) 18.dp else 0.dp,
-        MlMotion.slide(),
+        MlMotion.slide(Dp.VisibilityThreshold),
         label = "switchKnob",
     )
     Box(
         modifier
             .size(width = 44.dp, height = 26.dp)
+            .alpha(if (enabled) 1f else 0.45f)
             .clip(MlShape.Pill)
             .background(track)
             .clickable(
@@ -69,7 +81,7 @@ fun MlSwitch(
                 .offset(x = knobOffset)
                 .size(20.dp)
                 .clip(CircleShape)
-                .background(Color.White),
+                .background(knob),
         )
     }
 }
@@ -127,7 +139,10 @@ fun MlSegmented(
     }
 }
 
-/** The 8dp traffic / quota bar. */
+/**
+ * The 8dp traffic / quota bar. The track is a wash of the text colour, so it
+ * shows on a card and on the canvas alike.
+ */
 @Composable
 fun MlProgressBar(
     fraction: Float,
@@ -140,7 +155,7 @@ fun MlProgressBar(
             .fillMaxWidth()
             .height(height)
             .clip(MlShape.Pill)
-            .background(ml.colors.surface3),
+            .background(ml.colors.text.copy(alpha = 0.1f)),
     ) {
         val safe = fraction.coerceIn(0f, 1f)
         if (safe > 0f) {

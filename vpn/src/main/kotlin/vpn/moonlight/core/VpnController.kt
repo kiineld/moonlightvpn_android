@@ -14,9 +14,6 @@ object VpnController {
     val state: StateFlow<ConnectionState> get() = TunnelState.state
     val counters: StateFlow<TunnelCounters> get() = TunnelState.counters
 
-    /** Port of the running core's SOCKS inbound, or null when the tunnel is down. */
-    val socksPort: StateFlow<Int?> get() = TunnelState.socksPort
-
     /**
      * Returns the consent intent to launch, or null when permission is already
      * granted. Must be called on the main thread from an Activity context.

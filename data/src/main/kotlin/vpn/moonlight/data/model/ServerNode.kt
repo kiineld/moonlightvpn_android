@@ -57,13 +57,19 @@ data class ServerNode(
 }
 
 /**
- * Latency for a node, kept outside [ServerNode] so a probe pass never rewrites
- * the node list itself.
+ * The last latency measured for a node, kept outside [ServerNode] so a probe pass
+ * never rewrites the node list itself.
+ *
+ * There is no "measuring" case. A node being measured again still has the answer
+ * from last time, and that answer stays until the new one replaces it; which
+ * nodes are in flight is a separate fact, held by the repository.
  */
 sealed interface Latency {
+    /** Never measured. */
     data object Unknown : Latency
-    data object Measuring : Latency
     data class Value(val ms: Int) : Latency
+
+    /** The probe did not get an answer: the node is down, or too slow to use. */
     data class Failed(val reason: String? = null) : Latency
 }
 

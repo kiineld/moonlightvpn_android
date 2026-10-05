@@ -16,6 +16,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
@@ -56,7 +57,7 @@ class MoonlightVpnService : VpnService() {
     private val transition = Mutex()
 
     private var tunInterface: ParcelFileDescriptor? = null
-    private var statsJob: Job? = null
+    private var sessionJobs: Job? = null
     private var notifications: VpnNotifications? = null
 
     /**
@@ -117,14 +118,14 @@ class MoonlightVpnService : VpnService() {
     private suspend fun bringUp() = transition.withLock {
         val deps = dependencies ?: return@withLock fail(ConnectionError.Unknown, "dependencies unavailable")
 
-        // Announced before anything slow, so an in-flight latency pass stands down
-        // instead of holding the single global core while we try to start it.
-        XrayCoreOwner.claimForTunnel()
         TunnelState.update(ConnectionState.Connecting(nodeId = null))
 
         val settings = deps.settings.settings.first()
         strings = localizedFor(settings.language.tag)
         if (deps.subscriptions.subscription.value == null) deps.subscriptions.loadCached()
+        // `Auto` picks by the last measured latency, which may still be on disk
+        // if the service was started before the app got round to reading it.
+        deps.latencies.restore()
 
         val subscription = deps.subscriptions.subscription.value
             ?: return@withLock fail(ConnectionError.NoSubscription)
@@ -140,8 +141,8 @@ class MoonlightVpnService : VpnService() {
         TunnelState.update(ConnectionState.Connecting(node.id))
 
         // Step 1 — protection first. See the class comment.
-        deps.xray.registerSocketProtector { fd -> protect(fd) }
-        deps.xray.setDns(DNS_PRIMARY_ENDPOINT) { fd -> protect(fd) }
+        deps.xray.registerSocketProtector(::protectCoreSocket)
+        deps.xray.setDns(DNS_PRIMARY_ENDPOINT, ::protectCoreSocket)
 
         val socksPort = deps.xray.freePorts(1).getOrNull()?.firstOrNull() ?: FALLBACK_SOCKS_PORT
 
@@ -209,15 +210,27 @@ class MoonlightVpnService : VpnService() {
         // should not read "Подключено к Auto".
         val shown = if (node.isBareAutoName) strings.getString(R.string.ml_node_auto) else node.name
         promoteToForeground(strings.getString(R.string.ml_notification_connected, shown))
-        TunnelState.updateSocksPort(socksPort)
         TunnelState.update(ConnectionState.Connected(node.id, System.currentTimeMillis()))
-        startStatsPolling()
+        startSessionJobs(verboseLogging = settings.verboseLogging)
     }
+
+    /**
+     * Keeps one of the core's sockets out of the tunnel.
+     *
+     * The core keeps this callback for the life of the process and fails any
+     * dial it returns false for — including the latency probe's, long after the
+     * session that registered it. So a refusal only counts while there is a
+     * tunnel of ours to stay out of: with it down there is nothing to bypass,
+     * and `protect` may well refuse, since the system honours it only for the
+     * app currently holding the VPN.
+     */
+    private fun protectCoreSocket(fd: Int): Boolean =
+        protect(fd) || !TunnelState.state.value.isActive
 
     private suspend fun tearDown(finalState: ConnectionState) = transition.withLock {
         MoonlightLog.i(TAG, "tearing the tunnel down")
-        statsJob?.cancelAndJoin()
-        statsJob = null
+        sessionJobs?.cancelAndJoin()
+        sessionJobs = null
 
         Tun2Socks.stop()
         closeTun()
@@ -225,7 +238,6 @@ class MoonlightVpnService : VpnService() {
             XrayCoreOwner.exclusive { core.stop() }
             core.resetDns()
         }
-        XrayCoreOwner.releaseTunnelClaim()
 
         ServiceCompat.stopForeground(this, ServiceCompat.STOP_FOREGROUND_REMOVE)
         TunnelState.update(finalState)
@@ -259,7 +271,6 @@ class MoonlightVpnService : VpnService() {
             core.stop()
             core.resetDns()
         }
-        XrayCoreOwner.releaseTunnelClaim()
         ServiceCompat.stopForeground(this, ServiceCompat.STOP_FOREGROUND_REMOVE)
         TunnelState.update(ConnectionState.Error(reason, detail))
         stopSelf()
@@ -342,18 +353,36 @@ class MoonlightVpnService : VpnService() {
         )
     }
 
-    private fun startStatsPolling() {
-        statsJob = scope.launch {
-            var tick = 0L
-            while (true) {
-                Tun2Socks.stats()?.let(TunnelState::updateCounters)
-                // At debug level the core writes megabytes per minute, so the file
-                // is capped rather than left to grow for the length of a session.
-                if (tick % LOG_TRIM_EVERY_TICKS == 0L) {
-                    XrayLogFile.trimIfTooLarge(this@MoonlightVpnService)
+    /**
+     * The work that runs for as long as the tunnel is up — which is to say for
+     * hours, mostly with the screen off, so none of it may be unconditional.
+     *
+     * The traffic counters are polled only while something is showing them.
+     * This used to be a wake-up every second for the whole session, to update a
+     * number on a screen that was not on.
+     *
+     * The log is trimmed only at debug level, the one level at which the core
+     * writes enough to need it; at the default it logs a few hundred bytes a
+     * session and the file was being measured twice a minute for nothing.
+     */
+    private fun startSessionJobs(verboseLogging: Boolean) {
+        sessionJobs = scope.launch {
+            launch {
+                TunnelState.countersWatched.collectLatest { watched ->
+                    if (!watched) return@collectLatest
+                    while (true) {
+                        Tun2Socks.stats()?.let(TunnelState::updateCounters)
+                        delay(STATS_INTERVAL_MS)
+                    }
                 }
-                tick++
-                delay(STATS_INTERVAL_MS)
+            }
+            if (verboseLogging) {
+                launch {
+                    while (true) {
+                        delay(LOG_TRIM_INTERVAL_MS)
+                        XrayLogFile.trimIfTooLarge(this@MoonlightVpnService)
+                    }
+                }
             }
         }
     }
@@ -396,6 +425,6 @@ class MoonlightVpnService : VpnService() {
         private const val FALLBACK_SOCKS_PORT = 10808
         private const val TUNNEL_CONFIG_NAME = "tun2socks.yml"
         private const val STATS_INTERVAL_MS = 1_000L
-        private const val LOG_TRIM_EVERY_TICKS = 30L
+        private const val LOG_TRIM_INTERVAL_MS = 30_000L
     }
 }

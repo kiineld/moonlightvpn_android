@@ -3,18 +3,6 @@
     <!-- Brand name: identical in every locale. -->
     <string name="app_name" translatable="false">Moonlight</string>
 
-    <!-- Onboarding -->
-    <string name="onboarding_title">Internet\nwithout borders</string>
-    <string name="onboarding_subtitle">One tap to connect. A subscription from the bot or your account works here with no setup.</string>
-    <string name="onboarding_feature_tap_title">One tap</string>
-    <string name="onboarding_feature_tap_sub">Picks the nearest node for you</string>
-    <string name="onboarding_feature_devices_title">Up to 5 devices</string>
-    <string name="onboarding_feature_devices_sub">One subscription for phone, tablet and laptop</string>
-    <string name="onboarding_feature_reality_title">VLESS Reality</string>
-    <string name="onboarding_feature_reality_sub">Keys never leave your device</string>
-    <string name="onboarding_add_subscription">Add subscription</string>
-    <string name="onboarding_later">Later</string>
-
     <!-- Import -->
     <string name="import_title">Subscription</string>
     <string name="import_hint">Scan the QR code from the bot or your account — or paste a subscription link.</string>
@@ -43,14 +31,11 @@
     <string name="connect_refresh">Refresh</string>
     <string name="connect_refresh_subscription">Update</string>
     <string name="connect_refreshing">Refreshing</string>
-    <string name="connect_status_protected">Protected</string>
-    <string name="connect_status_disconnected">Not protected</string>
     <string name="connect_status_connecting">Connecting</string>
     <string name="connect_status_reconnecting">Reconnecting</string>
     <string name="connect_status_error">Error</string>
     <string name="connect_big_connected">Connected</string>
     <string name="connect_big_connect">Disconnected</string>
-    <string name="connect_big_connecting">Connecting</string>
     <string name="connect_hint_tap_disconnect">tap to disconnect</string>
     <string name="connect_hint_tap_connect">tap to connect</string>
     <string name="connect_hint_connecting">bringing the tunnel up…</string>
@@ -62,8 +47,13 @@
     <string name="connect_auto_prefix">Auto · %1$s</string>
     <string name="connect_no_subscription">No subscription yet</string>
     <string name="connect_no_subscription_sub">Add one to get started</string>
-    <string name="connect_measuring">measuring…</string>
     <string name="connect_latency_ms">%1$d ms</string>
+    <!-- A probe that got no answer. The same on the Mac, in both languages. -->
+    <string name="connect_latency_unreachable" translatable="false">n/a</string>
+    <string name="connect_connection_time">Connection time</string>
+    <string name="connect_servers">SERVERS</string>
+    <string name="connect_auto_sub">Fastest node by latency</string>
+    <string name="connect_auto_picked">Using %1$s</string>
 
     <!-- Connection errors -->
     <string name="error_no_subscription">Add a subscription first</string>
@@ -130,7 +120,7 @@
     <string name="settings_support">Support</string>
     <string name="settings_support_sub">We are here 24/7</string>
     <string name="settings_about">About</string>
-    <string name="settings_about_sub">Version %1$s · show the welcome screen</string>
+    <string name="settings_about_sub">Version %1$s</string>
     <string name="settings_core_version">Xray-core %1$s</string>
 
     <!-- Split tunnelling -->

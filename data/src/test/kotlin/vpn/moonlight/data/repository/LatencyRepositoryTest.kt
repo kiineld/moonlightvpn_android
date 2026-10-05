@@ -1,8 +1,12 @@
 package vpn.moonlight.data.repository
 
+import java.io.File
+import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Test
+import vpn.moonlight.data.local.LatencyStore
 import vpn.moonlight.data.model.Latency
 import vpn.moonlight.data.model.ServerNode
 
@@ -57,11 +61,97 @@ class LatencyRepositoryTest {
     }
 
     @Test
-    fun `marking idle clears a stuck measuring state`() {
+    fun `a node being measured again keeps its last measurement`() {
         val repository = LatencyRepository()
+        repository.publish(mapOf("a" to Latency.Value(80)))
+
+        repository.markMeasuring(listOf("a", "b"))
+
+        assertEquals(setOf("a", "b"), repository.pending.value)
+        assertEquals(Latency.Value(80), repository.latencyOf("a"))
+        assertEquals(Latency.Unknown, repository.latencyOf("b"))
+    }
+
+    @Test
+    fun `a result replaces the old measurement and settles that node only`() {
+        val repository = LatencyRepository()
+        repository.publish(mapOf("a" to Latency.Value(80), "b" to Latency.Value(120)))
+        repository.markMeasuring(listOf("a", "b"))
+
+        repository.publish(mapOf("a" to Latency.Value(95)))
+
+        assertEquals(Latency.Value(95), repository.latencyOf("a"))
+        assertEquals(setOf("b"), repository.pending.value)
+    }
+
+    @Test
+    fun `a pass cut short leaves the nodes it did not reach as they were`() {
+        val repository = LatencyRepository()
+        repository.publish(mapOf("a" to Latency.Value(80)))
         repository.markMeasuring(listOf("a"))
-        assertEquals(Latency.Measuring, repository.latencyOf("a"))
+
         repository.markIdle()
-        assertEquals(Latency.Unknown, repository.latencyOf("a"))
+
+        assertTrue(repository.pending.value.isEmpty())
+        assertEquals(Latency.Value(80), repository.latencyOf("a"))
+    }
+
+    @Test
+    fun `measurements come back after the process is gone`() = runTest {
+        val file = File.createTempFile("latencies", ".json").also { it.deleteOnExit() }
+        val first = LatencyRepository(LatencyStore(file))
+        first.publish(mapOf("a" to Latency.Value(80), "b" to Latency.Failed("timeout")))
+        first.persist()
+
+        val second = LatencyRepository(LatencyStore(file))
+        second.restore()
+
+        assertEquals(Latency.Value(80), second.latencyOf("a"))
+        // A node that did not answer is remembered as such, not as never checked.
+        assertTrue(second.latencyOf("b") is Latency.Failed)
+    }
+
+    @Test
+    fun `restoring does not overwrite what was measured since launch`() = runTest {
+        val file = File.createTempFile("latencies", ".json").also { it.deleteOnExit() }
+        LatencyRepository(LatencyStore(file)).apply {
+            publish(mapOf("a" to Latency.Value(80)))
+            persist()
+        }
+
+        val repository = LatencyRepository(LatencyStore(file))
+        repository.publish(mapOf("a" to Latency.Value(60)))
+        repository.restore()
+
+        assertEquals(Latency.Value(60), repository.latencyOf("a"))
+    }
+
+    @Test
+    fun `nodes the subscription no longer has are not kept on disk`() = runTest {
+        val file = File.createTempFile("latencies", ".json").also { it.deleteOnExit() }
+        val first = LatencyRepository(LatencyStore(file))
+        first.publish(mapOf("a" to Latency.Value(80), "gone" to Latency.Value(40)))
+        first.persist()
+        first.retainOnly(listOf("a"))
+
+        val second = LatencyRepository(LatencyStore(file))
+        second.restore()
+
+        assertEquals(Latency.Unknown, second.latencyOf("gone"))
+        assertEquals(Latency.Value(80), second.latencyOf("a"))
+    }
+
+    @Test
+    fun `clearing forgets the stored measurements too`() = runTest {
+        val file = File.createTempFile("latencies", ".json").also { it.deleteOnExit() }
+        val first = LatencyRepository(LatencyStore(file))
+        first.publish(mapOf("a" to Latency.Value(80)))
+        first.persist()
+        first.clear()
+
+        val second = LatencyRepository(LatencyStore(file))
+        second.restore()
+
+        assertEquals(Latency.Unknown, second.latencyOf("a"))
     }
 }

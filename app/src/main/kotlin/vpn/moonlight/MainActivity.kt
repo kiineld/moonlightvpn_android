@@ -5,14 +5,17 @@ import android.content.pm.PackageManager
 import android.os.Build
 import android.content.Intent
 import android.content.res.Configuration
+import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.activity.SystemBarStyle
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
@@ -63,6 +66,20 @@ class MainActivity : AppCompatActivity() {
                 ThemeMode.Dark -> true
                 ThemeMode.Light -> false
                 ThemeMode.System -> androidx.compose.foundation.isSystemInDarkTheme()
+            }
+            // The bars' icons follow the theme in the app, not the system's.
+            // enableEdgeToEdge() above picks them from the system's night mode,
+            // which is right only until the theme is changed here: switching
+            // to light left white icons on a white canvas until the next
+            // launch.
+            DisposableEffect(dark) {
+                val bars = if (dark) {
+                    SystemBarStyle.dark(Color.TRANSPARENT)
+                } else {
+                    SystemBarStyle.light(Color.TRANSPARENT, Color.TRANSPARENT)
+                }
+                enableEdgeToEdge(statusBarStyle = bars, navigationBarStyle = bars)
+                onDispose { }
             }
             val link by deepLink.collectAsStateWithLifecycle()
             // Language is applied here rather than by restarting the app.
@@ -115,7 +132,7 @@ class MainActivity : AppCompatActivity() {
 
     private companion object {
         // MoonlightDarkColors.bg and MoonlightLightColors.bg.
-        const val WINDOW_DARK = 0xFF101828.toInt()
-        const val WINDOW_LIGHT = 0xFFF2F3ED.toInt()
+        const val WINDOW_DARK = 0xFF000000.toInt()
+        const val WINDOW_LIGHT = 0xFFFFFFFF.toInt()
     }
 }

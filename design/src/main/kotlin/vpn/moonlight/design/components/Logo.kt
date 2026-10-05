@@ -15,11 +15,12 @@ import androidx.compose.ui.unit.dp
 import vpn.moonlight.design.MlShape
 
 private val TileLime = Color(0xFFD2FF1F)
-private val TileInk = Color(0xFF101828)
+private val TileInk = Color(0xFF0A0A0A)
 
 /**
- * The Moonlight tile mark. Its colours are fixed rather than themed: the design
- * ships it as a flat asset that stays lime in both light and dark.
+ * The Moonlight tile mark. Its colours are fixed rather than themed: the tile is
+ * the brand, lime in both light and dark, and the one place in a monochrome
+ * interface where that lime is spent.
  */
 @Composable
 fun MlLogo(modifier: Modifier = Modifier, size: Dp = 44.dp, cornerRadius: Dp = 13.dp) {

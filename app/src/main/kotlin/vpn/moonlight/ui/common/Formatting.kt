@@ -115,27 +115,31 @@ fun ServerNode.countryName(): String? {
     }.getOrNull()
 }
 
-/** The row sub-line: "Нидерланды · VLESS Reality · 24 ms". */
+/** The picker's sub-line: "Нидерланды · VLESS Reality · 124 ms". */
 @Composable
 @ReadOnlyComposable
-fun ServerNode.subtitleText(latency: Latency): String = buildList {
+fun ServerNode.subtitleText(latency: Latency = Latency.Unknown): String = buildList {
     countryName()?.let { add(it) }
     squad?.let { if (it != countryName()) add(it) }
     add(protocolLabel)
-    when (latency) {
-        Latency.Measuring -> add(stringResource(R.string.connect_measuring))
-        is Latency.Value -> add(stringResource(R.string.connect_latency_ms, latency.ms))
-        Latency.Unknown, is Latency.Failed -> Unit
-    }
+    if (latency is Latency.Value) add(stringResource(R.string.connect_latency_ms, latency.ms))
 }.joinToString(" · ")
 
+/**
+ * A node's latency, as its row shows it.
+ *
+ * The last measurement is shown for as long as it is the last one — including
+ * while a new probe is out for the node. The ellipsis is only for a node that
+ * is being measured for the first time and so has nothing to show yet.
+ */
 @Composable
 @ReadOnlyComposable
-fun latencyText(latency: Latency): String = when (latency) {
-    Latency.Unknown -> "—"
-    Latency.Measuring -> "…"
+fun latencyText(latency: Latency, measuring: Boolean = false): String = when (latency) {
     is Latency.Value -> stringResource(R.string.connect_latency_ms, latency.ms)
-    is Latency.Failed -> "—"
+    // Said outright: a node that did not answer is not the same as one that
+    // was never asked.
+    is Latency.Failed -> stringResource(R.string.connect_latency_unreachable)
+    Latency.Unknown -> if (measuring) "…" else "–"
 }
 
 @Composable
