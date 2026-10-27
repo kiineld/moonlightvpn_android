@@ -32,7 +32,10 @@ data class XrayConfigOptions(
      * directory and looks for `/system/bin/geosite.dat`.
      */
     val assetDir: String? = null,
+    /** Used only when a config brings no DNS servers of its own. */
     val dnsServers: List<String> = listOf("1.1.1.1", "8.8.8.8"),
+    /** The servers the user set in Settings, in place of the config's. Null keeps the config's. */
+    val dnsOverride: List<String>? = null,
     /**
      * `warning` records the core's startup banner and every real failure, and
      * nothing else — a few hundred bytes for a healthy session.
@@ -69,6 +72,20 @@ object XrayConfigBuilder {
     const val PROXY_TAG = "proxy"
     const val DIRECT_TAG = "direct"
     const val BLOCK_TAG = "block"
+
+    /**
+     * The DNS server the tun interface advertises. Nothing listens there: every
+     * lookup sent to it is answered by the core's own DNS — the config's servers,
+     * `hosts` and per-domain rules — instead of travelling out as a plain query
+     * that the config never sees.
+     */
+    const val TUN_DNS = "198.18.0.2"
+
+    // Ours, so they cannot collide with a panel's tags; a balancer selector is a
+    // tag prefix, and no panel names an outbound starting with an underscore.
+    private const val DNS_OUT_TAG = "_moonlight_dns"
+    private const val DNS_REFUSE_TAG = "_moonlight_dns_refuse"
+    private const val SOCKS_TAG = "socks"
     private const val ASSET_LOCATION_KEY = "xray.location.asset"
 
     /** Outbounds every panel config carries beside its proxies, which are no node. */
@@ -94,7 +111,9 @@ object XrayConfigBuilder {
      * The panel's config is kept **verbatim** apart from its inbounds — its DNS,
      * routing rules, balancers and burst observatory are all deliberate and
      * usually better tuned than anything generated here. Only the listener is
-     * ours, because the port has to be one we picked.
+     * ours, because the port has to be one we picked, and the apps' DNS lookups
+     * are handed to the config's DNS (see [TUN_DNS]); the user's own servers
+     * replace the config's only when they set some.
      *
      * The replacement inbound keeps the tag `socks`, which is what Remnawave
      * names it, so any routing rule that references an inbound tag still resolves.
@@ -110,6 +129,10 @@ object XrayConfigBuilder {
         return JsonObject(
             root.toMutableMap().apply {
                 this["inbounds"] = buildJsonArray { add(socksInbound(options)) }
+                this["dns"] = dnsBlock(root["dns"] as? JsonObject, options)
+                // Appended: the first outbound is the default for unmatched traffic.
+                this["outbounds"] = JsonArray(root["outbounds"] as JsonArray + dnsOutbounds())
+                this["routing"] = withDnsHijack(root["routing"] as? JsonObject)
                 mergeEnv(this, options)
                 // Always replaced, not just filled in when absent: the panel's log
                 // block has no file, and without one the core's diagnostics are
@@ -148,8 +171,60 @@ object XrayConfigBuilder {
         )
     }
 
+    /**
+     * The config's DNS with its servers settled: the user's when they set some,
+     * else the config's own, else ours — the tunnel sends every app's lookup here.
+     */
+    private fun dnsBlock(config: JsonObject?, options: XrayConfigOptions): JsonObject {
+        val own = (config?.get("servers") as? JsonArray)?.takeIf { it.isNotEmpty() }
+        val servers = options.dnsOverride?.let(::stringArray) ?: own ?: stringArray(options.dnsServers)
+        return JsonObject((config ?: JsonObject(emptyMap())) + ("servers" to servers))
+    }
+
+    private fun stringArray(values: List<String>) = buildJsonArray { values.forEach { add(it) } }
+
+    private fun dnsOutbounds() = listOf(
+        buildJsonObject {
+            put("tag", DNS_OUT_TAG)
+            // No settings on purpose: the core's default sends A/AAAA to its DNS and
+            // answers every other type (HTTPS, SVCB) at once with an empty reply.
+            // `nonIPQuery` would do the same and is deprecated as of 26.x.
+            put("protocol", "dns")
+        },
+        buildJsonObject {
+            put("tag", DNS_REFUSE_TAG)
+            put("protocol", "blackhole")
+        },
+    )
+
+    /** Puts the two rules for [TUN_DNS] ahead of everything the config routes. */
+    private fun withDnsHijack(routing: JsonObject?): JsonObject {
+        val rules = buildJsonArray {
+            add(
+                buildJsonObject {
+                    putJsonArray("inboundTag") { add(SOCKS_TAG) }
+                    putJsonArray("ip") { add(TUN_DNS) }
+                    put("port", "53")
+                    put("outboundTag", DNS_OUT_TAG)
+                },
+            )
+            // DNS-over-TLS and anything else aimed at the address: nothing serves it,
+            // and turning it away at once is what makes Android's private-DNS probe
+            // fall back to port 53 rather than time out first.
+            add(
+                buildJsonObject {
+                    putJsonArray("inboundTag") { add(SOCKS_TAG) }
+                    putJsonArray("ip") { add(TUN_DNS) }
+                    put("outboundTag", DNS_REFUSE_TAG)
+                },
+            )
+            (routing?.get("rules") as? JsonArray)?.forEach { add(it) }
+        }
+        return JsonObject((routing ?: JsonObject(emptyMap())) + ("rules" to rules))
+    }
+
     private fun socksInbound(options: XrayConfigOptions): JsonObject = buildJsonObject {
-        put("tag", "socks")
+        put("tag", SOCKS_TAG)
         put("listen", "127.0.0.1")
         put("port", options.socksPort)
         put("protocol", "socks")
@@ -260,10 +335,7 @@ object XrayConfigBuilder {
             environment(options)?.let { put("env", it) }
             put("log", logBlock(options))
 
-            putJsonObject("dns") {
-                putJsonArray("servers") { options.dnsServers.forEach { add(it) } }
-                put("queryStrategy", "UseIP")
-            }
+            put("dns", dnsBlock(buildJsonObject { put("queryStrategy", "UseIP") }, options))
 
             putJsonArray("inbounds") { add(socksInbound(options)) }
 
@@ -282,9 +354,10 @@ object XrayConfigBuilder {
                         put("protocol", "blackhole")
                     },
                 )
+                dnsOutbounds().forEach { add(it) }
             }
 
-            putJsonObject("routing") {
+            put("routing", withDnsHijack(buildJsonObject {
                 put("domainStrategy", "IPIfNonMatch")
                 putJsonArray("rules") {
                     if (options.bypassPrivateAddresses) {
@@ -304,7 +377,7 @@ object XrayConfigBuilder {
                         },
                     )
                 }
-            }
+            }))
         }.toString()
     }
 

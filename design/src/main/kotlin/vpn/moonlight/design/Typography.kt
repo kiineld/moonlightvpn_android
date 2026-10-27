@@ -14,7 +14,8 @@ import androidx.compose.ui.unit.sp
 /**
  * Onest carries every UI and body string; Unbounded is display only — page
  * titles, hero numbers, plan names, stat values, the wordmark. Unbounded never
- * appears below 15sp and never in running text.
+ * appears below 15sp and never in running text. JetBrains Mono sets the logs:
+ * a monospace drawn for reading code, with a slashed zero and a distinct l/1/I.
  *
  * Both ship as variable fonts, so each weight is a named instance on the
  * `wght` axis rather than a separate file.
@@ -40,7 +41,11 @@ val UnboundedFamily = FontFamily(
     variableFont(R.font.unbounded_variable, 800),
 )
 
-val MonoFamily = FontFamily.Monospace
+val MonoFamily = FontFamily(
+    variableFont(R.font.jetbrains_mono_variable, 400),
+    variableFont(R.font.jetbrains_mono_variable, 500),
+    variableFont(R.font.jetbrains_mono_variable, 600),
+)
 
 /** Weights run heavy: 500 is the lightest body weight, 800 the default for anything emphatic. */
 object MlWeight {

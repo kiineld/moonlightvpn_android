@@ -1,30 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <!-- Import -->
-    <string name="import_title">Подписка</string>
-    <string name="import_hint">Отсканируйте QR-код из бота или личного кабинета — либо вставьте ссылку подписки.</string>
-    <string name="import_camera_hint">наведите камеру на QR-код</string>
-    <string name="import_camera_permission">Разрешите доступ к камере, чтобы отсканировать QR-код</string>
-    <string name="import_grant_camera">Разрешить камеру</string>
-    <string name="import_paste">Вставить из буфера</string>
-    <string name="import_or_manually">ИЛИ ВРУЧНУЮ</string>
-    <string name="import_url_placeholder">https://sub.moonlight.vpn/…</string>
-    <string name="import_add">Добавить</string>
-    <string name="import_success_title">Подписка добавлена:</string>
-    <string name="import_success_connect">Подключиться</string>
-    <plurals name="import_servers_count">
-        <item quantity="one">%1$d сервер</item>
-        <item quantity="few">%1$d сервера</item>
-        <item quantity="many">%1$d серверов</item>
-        <item quantity="other">%1$d сервера</item>
-    </plurals>
-    <string name="import_error_clipboard">В буфере нет ссылки подписки</string>
-    <string name="import_error_invalid">Это не похоже на ссылку подписки</string>
-    <string name="import_error_network">Сервер недоступен. Проверьте соединение.</string>
-    <string name="import_error_not_found">Подписка не найдена. Проверьте ссылку.</string>
-    <string name="import_error_unauthorized">Эта подписка неактивна</string>
-    <string name="import_error_device_limit">Достигнут лимит устройств для этой подписки</string>
-    <string name="import_error_no_nodes">В подписке нет серверов</string>
+<resources xmlns:tools="http://schemas.android.com/tools">
 
     <!-- Connect -->
     <string name="connect_refresh">Обновить</string>
@@ -45,7 +20,7 @@
     <string name="connect_pinging">Замер…</string>
     <string name="connect_auto_prefix">Авто · %1$s</string>
     <string name="connect_no_subscription">Подписки пока нет</string>
-    <string name="connect_no_subscription_sub">Добавьте её, чтобы начать</string>
+    <string name="connect_no_subscription_sub">Выберите её на главной или купите тариф</string>
     <string name="connect_latency_ms">%1$d ms</string>
     <string name="connect_connection_time">Время подключения</string>
     <string name="connect_servers">СЕРВЕРЫ</string>
@@ -64,42 +39,6 @@
     <string name="error_network">Сеть недоступна</string>
     <string name="error_unknown">Что-то пошло не так</string>
 
-    <!-- Subscription -->
-    <string name="subscription_title">Подписка</string>
-    <string name="subscription_plan">Тариф</string>
-    <string name="subscription_plan_fallback">Moonlight</string>
-    <string name="subscription_active">Активна</string>
-    <string name="subscription_expired">Истекла</string>
-    <string name="subscription_label_remaining">ОСТАЛОСЬ</string>
-    <string name="subscription_label_traffic">ТРАФИК</string>
-    <string name="subscription_traffic_of">%1$s из %2$s</string>
-    <string name="subscription_traffic_unlimited">Без лимита</string>
-    <string name="subscription_valid_until">действует до %1$s</string>
-    <string name="subscription_link">ССЫЛКА ПОДПИСКИ</string>
-    <string name="subscription_copied">Ссылка скопирована</string>
-    <string name="subscription_refresh">Обновить подписку</string>
-    <string name="subscription_refresh_sub">Проверить серверы, дни и трафик</string>
-    <string name="subscription_refresh_running">Синхронизация с сервером…</string>
-    <string name="subscription_refresh_done">Обновлено только что</string>
-    <string name="subscription_refresh_failed">Не удалось обновить</string>
-    <string name="subscription_extend">Продлить подписку</string>
-    <string name="subscription_extend_sub">Оплата в боте или кабинете</string>
-    <string name="subscription_add">Добавить подписку</string>
-    <string name="subscription_add_sub">QR-код или ссылка</string>
-    <string name="subscription_empty_title">Подписки нет</string>
-    <string name="subscription_empty_sub">Добавьте её из бота или кабинета</string>
-    <string name="subscription_unknown">—</string>
-    <!-- Shown where the panel reports no cap (total=0 / expire=0), as opposed to
-         reporting nothing at all, which stays an em dash. -->
-    <string name="subscription_unlimited_short" translatable="false">∞</string>
-
-    <string name="subscription_delete">Удалить подписку</string>
-    <string name="subscription_delete_sub">Удалит серверы и ключи с этого устройства</string>
-    <string name="subscription_delete_confirm">Удалить подписку?</string>
-    <string name="subscription_delete_confirm_body">Туннель отключится, а список серверов будет удалён с этого устройства. Сама подписка не отменяется — её можно добавить снова по той же ссылке.</string>
-    <string name="action_cancel">Отмена</string>
-    <string name="action_delete">Удалить</string>
-
     <!-- Settings -->
     <string name="settings_title">Настройки</string>
     <string name="settings_section_connection">ПОДКЛЮЧЕНИЕ</string>
@@ -108,6 +47,7 @@
     <string name="settings_theme">Тема</string>
     <string name="settings_theme_dark">Тёмная</string>
     <string name="settings_theme_light">Светлая</string>
+    <string name="settings_theme_system">Авто</string>
     <string name="settings_language">Язык</string>
     <string name="settings_notifications">Уведомления</string>
     <string name="settings_notifications_sub">Об окончании подписки и трафика</string>
@@ -148,7 +88,6 @@
 
     <!-- Navigation -->
     <string name="nav_connect">Подключение</string>
-    <string name="nav_subscription">Подписка</string>
     <string name="nav_settings">Настройки</string>
     <string name="action_back">Назад</string>
 
@@ -201,4 +140,140 @@
     <string name="update_error_storage">Не хватает места для загрузки.</string>
     <string name="update_error_signature">Файл подписан другим ключом и был удалён.</string>
     <string name="update_install_blocked">Разрешите Moonlight устанавливать приложения и нажмите «Установить» ещё раз.</string>
+
+    <!-- Subscription -->
+    <!-- Shown where the panel reports no cap (total=0 / expire=0), as opposed to
+         reporting nothing at all, which stays an em dash. -->
+    <plurals name="import_servers_count">
+        <item quantity="one">%1$d сервер</item>
+        <item quantity="few">%1$d сервера</item>
+        <item quantity="many">%1$d серверов</item>
+        <item quantity="other">%1$d сервера</item>
+    </plurals>
+    <string name="subscription_add">Выбрать подписку</string>
+    <string name="subscription_unlimited_short" translatable="false">∞</string>
+    <string name="subscription_unknown">—</string>
+
+    <!-- Аккаунт: вход -->
+    <string name="auth_welcome">С возвращением</string>
+    <string name="auth_welcome_sub">Войдите, чтобы управлять подпиской</string>
+    <string name="auth_create">Создайте аккаунт</string>
+    <string name="auth_create_sub">Регистрация займёт минуту</string>
+    <string name="auth_telegram">Войти через Telegram</string>
+    <string name="auth_or">или</string>
+    <string name="auth_email">Email</string>
+    <string name="auth_password">Пароль</string>
+    <string name="auth_password_placeholder">Ваш пароль</string>
+    <string name="auth_forgot">Забыли пароль?</string>
+    <string name="auth_sign_in">Войти</string>
+    <string name="auth_sign_up">Зарегистрироваться</string>
+    <string name="auth_no_account">Нет аккаунта?</string>
+    <string name="auth_have_account">Уже есть аккаунт?</string>
+    <string name="auth_consent_terms">Принимаю публичную оферту и правила использования</string>
+    <string name="auth_consent_data">Даю согласие на обработку персональных данных</string>
+    <string name="auth_code_title">Проверьте почту</string>
+    <string name="auth_code_sub">Мы отправили код на %1$s</string>
+    <string name="auth_code">Код</string>
+    <string name="auth_code_confirm">Подтвердить</string>
+    <string name="auth_code_resend">Отправить код ещё раз</string>
+    <string name="auth_code_resent">Новый код отправлен</string>
+    <string name="auth_forgot_title">Сброс пароля</string>
+    <string name="auth_forgot_sub">Пришлём на почту ссылку для нового пароля</string>
+    <string name="auth_forgot_send">Отправить ссылку</string>
+    <string name="auth_forgot_sent">Ссылка отправлена — проверьте почту</string>
+    <string name="auth_back_to_login">Назад ко входу</string>
+    <string name="auth_telegram_failed">Вход через Telegram не завершился. Попробуйте ещё раз.</string>
+    <string name="auth_error_network">Нет связи с сервером</string>
+    <string name="auth_feature_speed">Молниеносная скорость</string>
+    <string name="auth_feature_speed_sub">Вплоть до 10 Гбит/с</string>
+    <string name="auth_feature_privacy">Полная анонимность</string>
+    <string name="auth_feature_privacy_sub">Нет логов, нет слежки</string>
+    <string name="auth_feature_servers">Сервера в востребованных странах</string>
+    <string name="auth_feature_servers_sub">Любой контент, где угодно</string>
+
+    <!-- Аккаунт: подписки -->
+    <string name="nav_home">Главная</string>
+    <string name="nav_wallet">Баланс</string>
+    <string name="nav_buy">Купить тариф</string>
+    <string name="home_hello">Привет, %1$s</string>
+    <string name="home_hello_anon">Привет</string>
+    <string name="home_active">Активна</string>
+    <string name="home_expired">Истекла</string>
+    <plurals name="home_days_word" tools:ignore="ImpliedQuantity">
+        <item quantity="one">день</item>
+        <item quantity="few">дня</item>
+        <item quantity="many">дней</item>
+        <item quantity="other">дня</item>
+    </plurals>
+    <string name="home_until">до %1$s</string>
+    <string name="home_traffic">Трафик</string>
+    <string name="home_devices">Устройства</string>
+    <string name="home_unlimited">Безлимит</string>
+    <string name="home_use">Подключить на этом телефоне</string>
+    <string name="home_in_use">На этом телефоне</string>
+    <string name="home_renew">Продлить</string>
+    <string name="home_empty_title">Подписки пока нет</string>
+    <string name="home_empty_sub">Выберите тариф — подключитесь за минуту</string>
+    <string name="home_trial">Попробовать бесплатно — %1$d дн.</string>
+    <string name="home_trial_activated">Пробный период активирован</string>
+    <string name="home_switch_failed">Не удалось переключиться на эту подписку</string>
+    <string name="home_syncing">Обновляется на сервере…</string>
+    <string name="home_load_failed">Не удалось загрузить аккаунт</string>
+    <string name="action_retry">Повторить</string>
+
+    <!-- Аккаунт: баланс -->
+    <string name="wallet_balance">На балансе</string>
+    <string name="wallet_topup">Пополнить</string>
+    <string name="wallet_amount">Сумма, ₽</string>
+    <string name="wallet_amount_hint">От 100 до 100 000 ₽</string>
+    <string name="wallet_method">Способ оплаты</string>
+    <string name="wallet_pay">Оплатить %1$s</string>
+    <string name="wallet_fee">комиссия %1$s%%</string>
+    <string name="wallet_history">История</string>
+    <string name="wallet_history_empty">Платежей пока нет</string>
+    <string name="wallet_promo">Промокод</string>
+    <string name="wallet_promo_apply">Применить</string>
+    <string name="wallet_payment_opened">Завершите оплату в браузере и вернитесь — баланс обновится сам</string>
+    <string name="wallet_no_methods">Оплата сейчас недоступна</string>
+
+    <!-- Аккаунт: тарифы -->
+    <string name="plans_title">Тарифы</string>
+    <string name="plans_renew_title">Продление: %1$s</string>
+    <string name="plans_period">Период</string>
+    <string name="plans_period_30">1 месяц</string>
+    <string name="plans_period_90">3 месяца</string>
+    <string name="plans_period_180">6 месяцев</string>
+    <string name="plans_period_365">1 год</string>
+    <plurals name="plans_devices">
+        <item quantity="one">%1$d устройство</item>
+        <item quantity="few">%1$d устройства</item>
+        <item quantity="many">%1$d устройств</item>
+        <item quantity="other">%1$d устройства</item>
+    </plurals>
+    <string name="plans_traffic">%1$s ГБ</string>
+    <string name="plans_unlimited">Безлимитный трафик</string>
+    <string name="plans_popular">Популярный</string>
+    <string name="plans_pay_balance">Баланс · %1$s</string>
+    <string name="plans_pay">Оплатить %1$s</string>
+    <string name="plans_done">Готово — подписка активна</string>
+    <string name="plans_discount">Скидка −%1$d%%</string>
+    <string name="plans_not_enough">Недостаточно средств на балансе</string>
+
+    <!-- Настройки: аккаунт и DNS -->
+    <string name="settings_section_account">Аккаунт</string>
+    <string name="settings_sign_out">Выйти</string>
+    <string name="settings_dns">DNS</string>
+    <string name="settings_dns_config">Из конфигурации сервера</string>
+    <string name="settings_dns_custom">Свой</string>
+    <string name="settings_dns_config_short">Из конфига</string>
+    <string name="settings_dns_hint">Применится со следующего подключения. DNS из конфигурации сервера знает, какой резолвер подходит каждому сайту; свой заменяет его для всего.</string>
+    <string name="settings_dns_custom_hint">IP-адрес, https:// (DNS-over-HTTPS) или tcp://</string>
+    <string name="settings_dns_invalid">Это не адрес DNS-сервера</string>
+    <string name="settings_dns_save">Сохранить</string>
+    <string name="settings_cabinet">Веб-кабинет</string>
+    <string name="settings_cabinet_sub">Тот же аккаунт в браузере</string>
+
+    <!-- Логи -->
+    <string name="logs_copy">Скопировать</string>
+    <string name="logs_copied">Логи скопированы</string>
 </resources>

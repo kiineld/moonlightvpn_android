@@ -1,8 +1,11 @@
 # Moonlight VPN — Android
 
-A Kotlin/Jetpack Compose VPN client built on **Xray-core 26.7.28**, implementing
-the `Moonlight Client` design. Subscriptions come from a Remnawave panel and are
-imported by QR code, clipboard, manual URL, or a Telegram bot link.
+The moonlight VPN app for Android: Kotlin/Jetpack Compose on **Xray-core 26.7.28**.
+It is the service's own app, not a general-purpose client — you sign in (Telegram,
+or email and password with an emailed code), see your subscriptions, switch the
+one this phone uses, buy or renew a plan, top up your balance, and connect. It
+talks to the same backend as the web cabinet (`/api/v1`, see
+[Account](#account)) and looks like the cabinet.
 
 ## Downloads
 
@@ -141,6 +144,35 @@ Private address space bypasses the tunnel using literal CIDRs rather than
 into the tunnel deliberately: leaving it out would let a device with working IPv6
 send that traffic straight out the physical interface, around the tunnel.
 
+## Account
+
+The account comes from the moonlight backend at `API_BASE_URL`
+(`https://cabinet.rustafield.site/api/v1`) — the API the web cabinet calls, with
+the same endpoints and error texts. `AccountApi` holds the access token in memory
+and the refresh token in the app's private DataStore (`SessionStore`; backups are
+off). An expired access token is refreshed once behind a lock; only a 401 on the
+refresh signs the user out.
+
+- **Email**: `/auth/login`; sign-up `/auth/register` with both consents, then the
+  emailed code at `/auth/verify`; reset with `/auth/password/forgot`.
+- **Telegram**: Telegram's official OAuth page — the one the cabinet opens as a
+  popup — runs in a WebView. That page answers its opener with `postMessage`;
+  a stand-in `window.opener` is installed on `oauth.telegram.org` before its scripts
+  run (`DOCUMENT_START_SCRIPT` + `WEB_MESSAGE_LISTENER`), and the ID token goes to
+  `/auth/telegram/oidc/complete`. The page is opened for the cabinet's origin,
+  which is the one allowed in BotFather.
+- **Subscriptions**: choosing one fetches `/subscription/link?sub_id=` and hands
+  the link to `SubscriptionRepository`, so the tunnel works exactly as before —
+  including offline, from the cached servers.
+- **Payments**: `/buy`, `/subscription/{id}/renew` and `/topup` either finish on
+  the balance or return a provider page (YooKassa, Lava, Heleket) that opens in
+  the browser; the screens refresh when the app comes back. Each order carries a
+  `request_id` kept for the screen's lifetime, so a retried Pay cannot charge twice.
+
+Test against a local stand-in with `-PmoonlightApiBaseUrl=http://10.0.2.2:<port>/api/v1`
+(a debug build with cleartext allowed). Google sign-in is not implemented: the
+backend has no Google OAuth yet.
+
 ## Subscriptions
 
 The **JSON subscription** (`<url>/json`) is tried first, with the base64 body as
@@ -153,7 +185,21 @@ as one `ss://` placeholder that cannot work. Both endpoints return the same
 
 A node from the JSON format keeps its **entire config verbatim**; the tunnel
 replaces only the inbound (`XrayConfigBuilder.fromPanelConfig`). The panel's DNS,
-routing and balancers are usually better tuned than anything generated here.
+routing and balancers are usually better tuned than anything generated here. A
+body that is one config object rather than an array is read as one node.
+
+### DNS comes from the config
+
+The tun interface advertises `198.18.0.2` as its DNS server, and nothing listens
+there: two routing rules put ahead of the config's own send port 53 at that address
+to a `dns` outbound — so every app's lookup is answered by the config's `dns`
+block, its servers, per-domain resolvers and `hosts` — and refuse anything else
+sent to it, which makes Android's private-DNS probe fall back at once. Before
+this, lookups went out as plain UDP to `1.1.1.1` through the proxy and the
+config's DNS was never used (a config's `hosts` pin of `lkfl2.nalog.ru` resolved
+to a different address). Settings → DNS can replace the config's servers with the
+user's own; the `hosts` and the rest of the block stay. A config without DNS
+servers gets `1.1.1.1` and `8.8.8.8`.
 
 ### Geodata is required
 
@@ -278,14 +324,17 @@ rather than as a configuration choice.
 
 ## Design system
 
-Black and white, as on the Mac. A black canvas, near-black surfaces told apart
-by a step of grey and a hairline, white type, and white as the one interactive
-colour — black, in the light theme. Colour is spent in two places only: the
-logo's lime `#D2FF1F`, which is the brand, and the small signals that carry
-meaning — latency, errors, warnings.
+The web cabinet's, value for value (its `styles/tokens.css`): a cream page
+(`#F8F8DE`) on the light theme and a dark grey that deepens downwards on the
+dark one, with frosted-glass panes on it — a translucent fill and a light edge —
+over two soft glows of the pale yellow (`MlPage`). Ink does the work: the main
+button is solid black on light, near-white on dark. The pale yellow `highlight`
+marks what is on or chosen, the round plus and the lit moon; the logo keeps its
+lime `#D2FF1F`. Onest for text, Unbounded for display, JetBrains Mono for the
+logs. The splash is the cabinet's: the moon waxes from new to full and the name
+rises under it (`MlSplash`).
 
-The token names are the ones every screen was written against; what they resolve
-to is what changed. The accent keeps its three roles:
+The accent keeps its three roles:
 
 - `accent` — fills (buttons, the plan card, active pills)
 - `accentInk` — accent as type or a glyph
@@ -342,25 +391,18 @@ switch would have no strings for the other one.
 
 ## Deep links
 
-The app registers the `moonlight://` scheme, so a bot or web page can hand it a
-subscription or toggle the tunnel:
+The app registers the `moonlight://` scheme, so a bot or web page can toggle the
+tunnel:
 
 | Link | Effect |
 |---|---|
-| `moonlight://import?url=<subscription url>` | Adds the subscription and shows the result |
-| `moonlight://import/<url-encoded subscription url>` | Same, url in the path |
 | `moonlight://connect` | Connects, asking for VPN consent on first run |
 | `moonlight://disconnect` | Disconnects |
 | `moonlight://open` | Opens the app |
 
-`sub`, `subscription` and `link` are accepted as aliases for `url`, and the
-value may be percent-encoded. Only `http`/`https` targets are accepted — a deep
-link must not be able to point the import flow at something that is not a
-subscription endpoint. A bare host gains `https://`.
-
-Import **submits automatically** rather than only filling the field, because the
-design promises a link from the bot "adds itself". The subscription screen shows
-what was added and can delete it.
+`moonlight://import?url=…` from older bot messages only opens the app now:
+subscriptions come from the account, and a link must not be a way to point the
+tunnel at someone else's servers.
 
 `https://` App Links for a panel domain are not registered; that needs a
 `assetlinks.json` hosted on the domain and is a deployment decision.
@@ -371,9 +413,9 @@ what was added and can delete it.
 
 | Field | Purpose |
 |---|---|
-| `DEFAULT_PANEL_HOST` | Placeholder host shown in the import field |
+| `API_BASE_URL` | The account backend; override with `-PmoonlightApiBaseUrl` |
 | `TELEGRAM_CHANNEL_URL` | Settings → Our channel |
-| `CABINET_URL` | Subscription → Extend subscription |
+| `CABINET_URL` | Settings → Web cabinet, and the origin Telegram's OAuth page is opened for |
 | `SUPPORT_URL` | Settings → Support |
 
 The design's `sub.moonlight.vpn` is a placeholder; point these at real endpoints
@@ -396,9 +438,7 @@ byte/day/duration formatters against the design's own strings.
 - **Not verified end-to-end.** The project compiles, the APK packages both native
   libraries, and the unit tests pass. An actual tunnel carrying traffic has not
   been exercised — that needs a physical device and a live subscription.
-- Pasting a bare `vless://` link imports nothing; the import path expects a
-  subscription URL. Single-node import is not implemented.
-- `ThemeMode.System` exists in the model but the settings UI offers only
-  Dark/Light, matching the design.
+- Telegram sign-in has been exercised up to Telegram's own page and its cancel
+  path; the final step needs a real Telegram account.
 - Reconnect-on-network-change is not implemented; `ConnectionState.Reconnecting`
   is modelled but never entered.

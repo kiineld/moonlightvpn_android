@@ -18,11 +18,13 @@ android {
         versionName = (project.findProperty("moonlightVersionName") as String?) ?: "1.0.6"
         versionCode = (project.findProperty("moonlightVersionCode") as String?)?.toInt() ?: 10006
 
-        // The panel these subscriptions live on. Override per flavour/build.
-        buildConfigField("String", "DEFAULT_PANEL_HOST", "\"sub.moonlight.vpn\"")
+        // The account backend: the same API the web cabinet calls. A local
+        // stand-in can be swapped in for testing: -PmoonlightApiBaseUrl=http://10.0.2.2:8766/api/v1
+        val apiBaseUrl = (project.findProperty("moonlightApiBaseUrl") as String?) ?: "https://cabinet.rustafield.site/api/v1"
+        buildConfigField("String", "API_BASE_URL", "\"$apiBaseUrl\"")
         buildConfigField("String", "TELEGRAM_CHANNEL_URL", "\"https://t.me/moonlight_vpn_channel\"")
         buildConfigField("String", "SUPPORT_URL", "\"https://t.me/moonlight_support\"")
-        buildConfigField("String", "CABINET_URL", "\"https://cabinetofficial.rustafield.site\"")
+        buildConfigField("String", "CABINET_URL", "\"https://cabinet.rustafield.site\"")
         // Where the in-app updater looks for releases.
         buildConfigField("String", "GITHUB_REPO", "\"kiineld/moonlightvpn_android\"")
     }
@@ -130,12 +132,8 @@ dependencies {
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.work)
-
-    implementation(libs.camerax.core)
-    implementation(libs.camerax.camera2)
-    implementation(libs.camerax.lifecycle)
-    implementation(libs.camerax.view)
-    implementation(libs.mlkit.barcode)
+    // Telegram's OAuth page runs in a WebView that stands in for the popup's opener.
+    implementation(libs.androidx.webkit)
 
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)

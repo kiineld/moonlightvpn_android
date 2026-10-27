@@ -87,6 +87,7 @@ class MainActivity : AppCompatActivity() {
                 MoonlightTheme(darkTheme = dark) {
                     MoonlightApp(
                         container = container,
+                        language = settings.language.tag,
                         deepLink = link,
                         onDeepLinkHandled = { deepLink.value = null },
                     )
@@ -132,7 +133,7 @@ class MainActivity : AppCompatActivity() {
 
     private companion object {
         // MoonlightDarkColors.bg and MoonlightLightColors.bg.
-        const val WINDOW_DARK = 0xFF000000.toInt()
-        const val WINDOW_LIGHT = 0xFFFFFFFF.toInt()
+        const val WINDOW_DARK = 0xFF1A1A1D.toInt()
+        const val WINDOW_LIGHT = 0xFFF8F8DE.toInt()
     }
 }

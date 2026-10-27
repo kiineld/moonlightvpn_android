@@ -30,11 +30,12 @@ class SettingsStore(private val context: Context) {
         val selectedNode = stringPreferencesKey("selected_node")
         val hardwareId = stringPreferencesKey("hardware_id")
         val verboseLogging = booleanPreferencesKey("verbose_logging")
+        val dnsServers = stringPreferencesKey("dns_servers")
     }
 
     val settings: Flow<AppSettings> = context.preferences.data.map { prefs ->
         AppSettings(
-            theme = prefs[Keys.theme]?.toThemeMode() ?: ThemeMode.Dark,
+            theme = prefs[Keys.theme]?.toThemeMode() ?: ThemeMode.System,
             language = prefs[Keys.language]?.toLanguage() ?: AppLanguage.Russian,
             notificationsEnabled = prefs[Keys.notifications] ?: true,
             splitMode = prefs[Keys.splitMode]?.toSplitMode() ?: SplitMode.All,
@@ -43,6 +44,7 @@ class SettingsStore(private val context: Context) {
                 ?.let { NodeSelection.Pinned(it) }
                 ?: NodeSelection.Auto,
             verboseLogging = prefs[Keys.verboseLogging] ?: false,
+            dnsServers = prefs[Keys.dnsServers]?.split('\n')?.filter { it.isNotBlank() }?.ifEmpty { null },
         )
     }
 
@@ -84,6 +86,12 @@ class SettingsStore(private val context: Context) {
     }
 
     suspend fun setVerboseLogging(enabled: Boolean) = edit { it[Keys.verboseLogging] = enabled }
+
+    /** Null or empty goes back to the config's own DNS. */
+    suspend fun setDnsServers(servers: List<String>?) = edit { prefs ->
+        if (servers.isNullOrEmpty()) prefs.remove(Keys.dnsServers)
+        else prefs[Keys.dnsServers] = servers.joinToString("\n")
+    }
 
     private suspend fun edit(block: (androidx.datastore.preferences.core.MutablePreferences) -> Unit) {
         context.preferences.edit(block)

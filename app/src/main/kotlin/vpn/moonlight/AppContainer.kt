@@ -7,11 +7,14 @@ import vpn.moonlight.core.xray.LibXrayCore
 import vpn.moonlight.core.xray.XrayCore
 import vpn.moonlight.data.local.DeviceIdentity
 import vpn.moonlight.data.local.LatencyStore
+import vpn.moonlight.data.local.SessionStore
 import vpn.moonlight.data.local.SettingsStore
 import vpn.moonlight.data.local.ThemeStartupCache
 import vpn.moonlight.data.local.SubscriptionStore
+import vpn.moonlight.data.remote.AccountApi
 import vpn.moonlight.data.remote.SubscriptionApi
 import vpn.moonlight.data.remote.UpdateApi
+import vpn.moonlight.data.repository.AccountRepository
 import vpn.moonlight.data.repository.InstalledAppsRepository
 import vpn.moonlight.data.repository.LatencyRepository
 import vpn.moonlight.data.repository.SubscriptionRepository
@@ -44,6 +47,19 @@ class AppContainer(private val context: Context) {
         store = subscriptionStore,
         latencies = latencyRepository,
     )
+
+    val accountRepository: AccountRepository = run {
+        val session = SessionStore(context)
+        lateinit var repository: AccountRepository
+        val api = AccountApi(
+            baseUrl = BuildConfig.API_BASE_URL,
+            tokens = session,
+            userAgent = "Moonlight/${deviceIdentity.appVersion} (Android)",
+            onSessionRejected = { repository.onSessionRejected() },
+        )
+        repository = AccountRepository(api, session, subscriptionRepository)
+        repository
+    }
 
     val updateRepository = UpdateRepository(
         api = UpdateApi(

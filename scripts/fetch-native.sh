@@ -62,7 +62,7 @@ for f in geosite.dat geoip.dat; do
   [ -s "$GEO_DIR/$f" ] && echo "  $f $(du -h "$GEO_DIR/$f" | cut -f1)"
 done
 
-# ---------- Fonts: Onest (UI/body) + Unbounded (display) ----------
+# ---------- Fonts: Onest (UI/body) + Unbounded (display) + JetBrains Mono (logs) ----------
 FONT_DIR="$ROOT/design/src/main/res/font"
 mkdir -p "$FONT_DIR"
 fetch_font(){ # $1=dest basename  $2..=candidate urls
@@ -78,6 +78,7 @@ fetch_font(){ # $1=dest basename  $2..=candidate urls
 GF=https://raw.githubusercontent.com/google/fonts/main/ofl
 fetch_font onest_variable.ttf     "$GF/onest/Onest%5Bwght%5D.ttf"         || fail=1
 fetch_font unbounded_variable.ttf "$GF/unbounded/Unbounded%5Bwght%5D.ttf" || fail=1
+fetch_font jetbrains_mono_variable.ttf "$GF/jetbrainsmono/JetBrainsMono%5Bwght%5D.ttf" || fail=1
 
 say "DONE (fail=$fail)"
 exit $fail

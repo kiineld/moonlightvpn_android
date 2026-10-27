@@ -21,7 +21,7 @@ enum class AppLanguage(val tag: String) {
 
 /** User preferences, persisted in DataStore. */
 data class AppSettings(
-    val theme: ThemeMode = ThemeMode.Dark,
+    val theme: ThemeMode = ThemeMode.System,
     val language: AppLanguage = AppLanguage.Russian,
     val notificationsEnabled: Boolean = true,
     val splitMode: SplitMode = SplitMode.All,
@@ -29,6 +29,8 @@ data class AppSettings(
     val selection: NodeSelection = NodeSelection.Auto,
     /** Raises xray-core's own log level to debug, for diagnosing a report. */
     val verboseLogging: Boolean = false,
+    /** DNS servers the user chose, replacing the config's. Null: the config's own. */
+    val dnsServers: List<String>? = null,
 )
 
 /** An installed app that can be tunnelled. */

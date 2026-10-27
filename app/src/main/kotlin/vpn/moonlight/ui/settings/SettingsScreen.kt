@@ -1,9 +1,6 @@
 package vpn.moonlight.ui.settings
 
 import android.Manifest
-import android.content.Context
-import android.content.Intent
-import android.net.Uri
 import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -48,6 +45,7 @@ import vpn.moonlight.design.components.MlText
 import vpn.moonlight.design.MlIcon
 import vpn.moonlight.design.ml
 import vpn.moonlight.ui.common.appsCountText
+import vpn.moonlight.ui.common.openUrl
 import vpn.moonlight.update.ApkInstaller
 
 @Composable
@@ -92,15 +90,26 @@ fun SettingsScreen(
                 .padding(top = 12.dp, bottom = 110.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp),
         ) {
+            MlOverline(stringResource(R.string.settings_section_account))
+            AccountCard(
+                account = state.account,
+                onCabinet = { context.openUrl(BuildConfig.CABINET_URL) },
+                onSignOut = { viewModel.signOut(context) },
+            )
+
             MlOverline(stringResource(R.string.settings_section_connection))
             MlCard {
-                MlNavRow(
-                    title = stringResource(R.string.settings_split),
-                    subtitle = splitSummary(state.settings.splitMode, state.selectedAppCount),
-                    onClick = onOpenSplitTunnel,
-                    icon = MlIcons.Layers,
-                    tileFill = ml.colors.cat2,
-                )
+                Column {
+                    MlNavRow(
+                        title = stringResource(R.string.settings_split),
+                        subtitle = splitSummary(state.settings.splitMode, state.selectedAppCount),
+                        onClick = onOpenSplitTunnel,
+                        icon = MlIcons.Layers,
+                        tileFill = ml.colors.cat2,
+                    )
+                    MlDivider(insetStart = 72.dp)
+                    DnsSetting(current = state.settings.dnsServers, onSave = viewModel::setDns)
+                }
             }
 
             MlOverline(stringResource(R.string.settings_section_app))
@@ -109,13 +118,12 @@ fun SettingsScreen(
                     SegmentedRow(
                         label = stringResource(R.string.settings_theme),
                         options = listOf(
-                            stringResource(R.string.settings_theme_dark),
+                            stringResource(R.string.settings_theme_system),
                             stringResource(R.string.settings_theme_light),
+                            stringResource(R.string.settings_theme_dark),
                         ),
-                        selectedIndex = if (state.settings.theme == ThemeMode.Light) 1 else 0,
-                        onSelect = { index ->
-                            viewModel.setTheme(if (index == 1) ThemeMode.Light else ThemeMode.Dark)
-                        },
+                        selectedIndex = themes.indexOf(state.settings.theme).coerceAtLeast(0),
+                        onSelect = { index -> viewModel.setTheme(themes[index]) },
                     )
                     MlDivider(insetStart = 16.dp)
                     SegmentedRow(
@@ -262,10 +270,4 @@ private fun SegmentedRow(
     }
 }
 
-private fun Context.openUrl(url: String) {
-    runCatching {
-        startActivity(
-            Intent(Intent.ACTION_VIEW, Uri.parse(url)).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
-        )
-    }
-}
+private val themes = listOf(ThemeMode.System, ThemeMode.Light, ThemeMode.Dark)

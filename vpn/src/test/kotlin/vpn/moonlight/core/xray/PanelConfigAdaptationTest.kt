@@ -72,10 +72,57 @@ class PanelConfigAdaptationTest {
         // anything generated here.
         assertEquals(2, config.obj("dns").array("servers").size)
         assertEquals("IPIfNonMatch", config.obj("routing").str("domainStrategy"))
-        assertEquals(4, config.obj("routing").array("rules").size)
+        // The panel's rules, in order, after the two that hand app DNS to the core.
+        val panel = json.parseToJsonElement(panelConfig) as JsonObject
+        assertEquals(panel.obj("routing").array("rules"), JsonArray(config.obj("routing").array("rules").drop(2)))
         assertEquals("Balancer_direct", (config.obj("routing").array("balancers")[0] as JsonObject).str("tag"))
-        assertEquals(4, config.array("outbounds").size)
+        // The panel's outbounds first: the first one is the default for unmatched traffic.
+        assertEquals(panel.array("outbounds"), JsonArray(config.array("outbounds").take(4)))
         assertTrue(config.containsKey("burstObservatory"))
+    }
+
+    @Test
+    fun `app dns lookups are answered by the config's dns, not sent past it`() {
+        val config = tunnel()
+        val hijack = config.obj("routing").array("rules")[0] as JsonObject
+        assertEquals(XrayConfigBuilder.TUN_DNS, (hijack.array("ip")[0] as JsonPrimitive).content)
+        assertEquals("53", hijack.str("port"))
+        assertEquals("socks", (hijack.array("inboundTag")[0] as JsonPrimitive).content)
+        val dnsOut = config.array("outbounds").map { it as JsonObject }.single { it.str("tag") == hijack.str("outboundTag") }
+        assertEquals("dns", dnsOut.str("protocol"))
+        // Anything else aimed at the address (DNS over TLS) is refused, not proxied.
+        val refuse = config.obj("routing").array("rules")[1] as JsonObject
+        val refuseOut = config.array("outbounds").map { it as JsonObject }.single { it.str("tag") == refuse.str("outboundTag") }
+        assertEquals("blackhole", refuseOut.str("protocol"))
+    }
+
+    @Test
+    fun `the user's dns replaces the config's servers and keeps everything else`() {
+        val withHosts = panelConfig.replace(
+            "\"dns\": { \"servers\"",
+            "\"dns\": { \"tag\": \"dns_in\", \"hosts\": { \"lkfl2.nalog.ru\": \"213.24.64.175\" }, \"servers\"",
+        )
+        val dns = (
+            json.parseToJsonElement(
+                XrayConfigBuilder.fromPanelConfig(
+                    withHosts,
+                    XrayConfigOptions(socksPort = 1, dnsOverride = listOf("https://dns.adguard-dns.com/dns-query")),
+                ),
+            ) as JsonObject
+            ).obj("dns")
+        assertEquals(listOf("https://dns.adguard-dns.com/dns-query"), dns.array("servers").map { (it as JsonPrimitive).content })
+        assertEquals("213.24.64.175", dns.obj("hosts").str("lkfl2.nalog.ru"))
+        assertEquals("dns_in", dns.str("tag"))
+    }
+
+    @Test
+    fun `a config without dns servers gets ours, so app lookups still resolve`() {
+        val bare = """{"outbounds":[{"tag":"proxy","protocol":"vless"}]}"""
+        val config = json.parseToJsonElement(
+            XrayConfigBuilder.fromPanelConfig(bare, XrayConfigOptions(socksPort = 1)),
+        ) as JsonObject
+        assertEquals(listOf("1.1.1.1", "8.8.8.8"), config.obj("dns").array("servers").map { (it as JsonPrimitive).content })
+        assertEquals(2, config.obj("routing").array("rules").size)
     }
 
     @Test

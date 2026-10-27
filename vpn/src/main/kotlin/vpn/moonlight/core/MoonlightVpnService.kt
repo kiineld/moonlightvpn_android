@@ -162,6 +162,7 @@ class MoonlightVpnService : VpnService() {
             assetDir = XrayAssets.directory(this).absolutePath,
             logFile = XrayLogFile.file(this).absolutePath,
             logLevel = if (settings.verboseLogging) "debug" else "warning",
+            dnsOverride = settings.dnsServers,
         )
         MoonlightLog.i(
             TAG,
@@ -292,8 +293,8 @@ class MoonlightVpnService : VpnService() {
             // interface and leak around the tunnel.
             .addAddress(TUN_IPV6, TUN_IPV6_PREFIX)
             .addRoute("::", 0)
-            .addDnsServer(DNS_PRIMARY)
-            .addDnsServer(DNS_SECONDARY)
+            // Answered inside the core by the config's own DNS; see TUN_DNS.
+            .addDnsServer(XrayConfigBuilder.TUN_DNS)
             .setBlocking(false)
 
         applySplitTunnel(builder, settings)
@@ -418,8 +419,6 @@ class MoonlightVpnService : VpnService() {
         private const val TUN_IPV6 = "fc00::1"
         private const val TUN_IPV6_PREFIX = 128
 
-        private const val DNS_PRIMARY = "1.1.1.1"
-        private const val DNS_SECONDARY = "8.8.8.8"
         private const val DNS_PRIMARY_ENDPOINT = "1.1.1.1:53"
 
         private const val FALLBACK_SOCKS_PORT = 10808

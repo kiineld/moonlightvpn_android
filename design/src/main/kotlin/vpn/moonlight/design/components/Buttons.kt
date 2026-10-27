@@ -159,3 +159,63 @@ fun MlPillButton(
         }
     }
 }
+
+/**
+ * The quiet partner of [MlPrimaryButton]: a glass pill with an ink label, for
+ * the second action beside a main one ("Продлить" next to "Подключить").
+ */
+@Composable
+fun MlSecondaryButton(
+    label: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    leadingIcon: MlIconSpec? = null,
+    contentColor: Color = Color.Unspecified,
+) {
+    val source = rememberPressSource()
+    val ink = when {
+        !enabled -> ml.colors.textMuted
+        contentColor != Color.Unspecified -> contentColor
+        else -> ml.colors.text
+    }
+    Row(
+        modifier
+            .height(52.dp)
+            .pressScale(source, MlMotion.PressButton, enabled)
+            .clip(MlShape.Pill)
+            .background(ml.colors.surface)
+            .border(1.dp, ml.colors.hairline, MlShape.Pill)
+            .clickable(source, indication = null, enabled = enabled, onClick = onClick)
+            .padding(horizontal = 20.dp),
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        if (leadingIcon != null) {
+            MlIcon(leadingIcon, size = 18.dp, tint = ink)
+            Box(Modifier.size(9.dp))
+        }
+        MlText(label, ml.type.bodyEmphatic, color = ink, maxLines = 1)
+    }
+}
+
+/** The cabinet's round yellow plus beside the tab bar: the way to buy. */
+@Composable
+fun MlFab(
+    onClick: () -> Unit,
+    label: String,
+    modifier: Modifier = Modifier,
+    icon: MlIconSpec = vpn.moonlight.design.MlIcons.Plus,
+) {
+    MlIconButton(
+        icon = icon,
+        onClick = onClick,
+        modifier = modifier,
+        size = 64.dp,
+        iconSize = 26.dp,
+        strokeWidth = 2.4f,
+        background = ml.colors.highlight,
+        tint = ml.colors.onHighlight,
+        label = label,
+    )
+}

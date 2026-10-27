@@ -145,6 +145,18 @@ class PanelConfigParserTest {
     }
 
     @Test
+    fun `a single config object, not in an array, is one node`() {
+        val single = """{"remarks":"🇪🇪 Estonia","routing":{"balancers":[{"tag":"b","selector":["EE"]}]},
+            "outbounds":[{"tag":"EE","protocol":"vless",
+            "settings":{"vnext":[{"address":"ee.example","port":443}]}},
+            {"tag":"direct","protocol":"freedom"}]}"""
+        val nodes = PanelConfigParser.parse(single)
+        assertEquals(1, nodes.size)
+        assertEquals("ee.example", nodes[0].host)
+        assertTrue(nodes[0].isBalancer)
+    }
+
+    @Test
     fun `a config with no outbounds is skipped rather than crashing`() {
         val partial = """[{"remarks":"broken","outbounds":[]},{"remarks":"🇱🇻 ok",
             "outbounds":[{"tag":"proxy","protocol":"vless",

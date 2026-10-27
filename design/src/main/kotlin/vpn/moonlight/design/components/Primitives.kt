@@ -68,11 +68,9 @@ fun MlDivider(modifier: Modifier = Modifier, insetStart: Dp = 0.dp, soft: Boolea
 }
 
 /**
- * A rounded card, the default container for grouped content.
- *
- * On the plain `surface` it takes a hairline: the canvas is black and the
- * surface one step off it, and the line is what finds the card's edge. A card
- * given a [background] of its own — the plan card — is its own edge.
+ * A pane of frosted glass, the default container for grouped content: the
+ * translucent `surface` with the light `hairline` that reads as its edge, as in
+ * the cabinet. A card given a [background] of its own is its own edge.
  */
 @Composable
 fun MlCard(
@@ -86,7 +84,7 @@ fun MlCard(
         modifier
             .clip(shape)
             .background(if (plain) ml.colors.surface else background)
-            .then(if (plain) Modifier.border(1.dp, ml.colors.hairlineSoft, shape) else Modifier),
+            .then(if (plain) Modifier.border(1.dp, ml.colors.hairline, shape) else Modifier),
         content = content,
     )
 }

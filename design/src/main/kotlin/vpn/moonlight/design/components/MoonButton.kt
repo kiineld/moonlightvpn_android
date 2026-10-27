@@ -119,7 +119,7 @@ fun MoonButton(
             // the moon's own colour as it lights.
             drawCircle(colors.surface, radius)
             drawCircle(
-                color = lerp(colors.hairline, colors.brand.copy(alpha = 0.75f), full),
+                color = lerp(colors.hairline, colors.highlightFill.copy(alpha = 0.75f), full),
                 radius = radius - hairline / 2f,
                 style = Stroke(hairline),
             )
@@ -132,8 +132,8 @@ fun MoonButton(
                 val reach = moonRadius + moon * 0.6f
                 drawCircle(
                     brush = Brush.radialGradient(
-                        0f to colors.brand.copy(alpha = 0.34f * full),
-                        moonRadius / reach to colors.brand.copy(alpha = 0.22f * full),
+                        0f to colors.highlightFill.copy(alpha = 0.34f * full),
+                        moonRadius / reach to colors.highlightFill.copy(alpha = 0.22f * full),
                         1f to Color.Transparent,
                         center = center,
                         radius = reach,
@@ -158,7 +158,7 @@ fun MoonButton(
             )
             lit.rewind()
             lit.op(disc, shadow, PathOperation.Difference)
-            drawPath(lit, lerp(colors.text2, colors.brand, full))
+            drawPath(lit, lerp(colors.text2, colors.highlightFill, full))
 
             // The logo's two stars, up and to the right of the moon. They
             // belong to the night, so they go as the moon fills.

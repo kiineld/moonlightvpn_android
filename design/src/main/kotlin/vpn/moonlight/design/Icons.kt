@@ -220,6 +220,43 @@ object MlIcons {
         "m6 6 12 12",
         ),
     )
+    val Home = MlIconSpec(
+        listOf(
+            "M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8",
+            "M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z",
+        ),
+    )
+    val Wallet = MlIconSpec(
+        listOf(
+            "M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1",
+            "M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4",
+        ),
+    )
+    val Mail = MlIconSpec(
+        listOf(
+            "m22 7-8.991 5.727a2 2 0 0 1-2.009 0L2 7",
+            "M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z",
+        ),
+    )
+    val LogOut = MlIconSpec(listOf("m16 17 5-5-5-5", "M21 12H9", "M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"))
+    val User = MlIconSpec(listOf("M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2", "M16 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0z"))
+    val CreditCard = MlIconSpec(listOf("M4 5h16a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z", "M2 10h20"))
+    val Tag = MlIconSpec(
+        listOf(
+            "M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z",
+            "M7.5 7.5h.01",
+        ),
+    )
+    val Moon = MlIconSpec(listOf("M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"))
+    val Eye = MlIconSpec(listOf("M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0", "M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"))
+    val Server = MlIconSpec(
+        listOf(
+            "M4 2h16a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z",
+            "M4 14h16a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-4a2 2 0 0 1 2-2z",
+            "M6 6h.01",
+            "M6 18h.01",
+        ),
+    )
     val Zap = MlIconSpec(listOf("M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"))
     val Trash2 = MlIconSpec(
         listOf(

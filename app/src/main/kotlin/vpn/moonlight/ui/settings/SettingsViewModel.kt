@@ -10,7 +10,10 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import android.content.Context
 import vpn.moonlight.AppContainer
+import vpn.moonlight.core.VpnController
+import vpn.moonlight.data.model.Account
 import vpn.moonlight.data.model.AppLanguage
 import vpn.moonlight.data.model.AppSettings
 import vpn.moonlight.data.model.SplitMode
@@ -23,6 +26,7 @@ data class SettingsUiState(
     val selectedAppCount: Int = 0,
     /** From the panel's `support-url` header, when it sent one. */
     val supportUrl: String? = null,
+    val account: Account? = null,
 )
 
 class SettingsViewModel(private val container: AppContainer) : ViewModel() {
@@ -30,11 +34,13 @@ class SettingsViewModel(private val container: AppContainer) : ViewModel() {
     val state: StateFlow<SettingsUiState> = combine(
         container.settingsStore.settings,
         container.subscriptionRepository.subscription,
-    ) { settings, subscription ->
+        container.accountRepository.account,
+    ) { settings, subscription, account ->
         SettingsUiState(
             settings = settings,
             selectedAppCount = settings.splitPackages.size,
             supportUrl = subscription?.supportUrl,
+            account = account,
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), SettingsUiState())
 
@@ -56,6 +62,17 @@ class SettingsViewModel(private val container: AppContainer) : ViewModel() {
 
     fun setNotifications(enabled: Boolean) {
         viewModelScope.launch { container.settingsStore.setNotificationsEnabled(enabled) }
+    }
+
+    /** Null goes back to the DNS in the server config. */
+    fun setDns(servers: List<String>?) {
+        viewModelScope.launch { container.settingsStore.setDnsServers(servers) }
+    }
+
+    /** The tunnel goes down first: it would otherwise run on an account that is gone. */
+    fun signOut(context: Context) {
+        VpnController.disconnect(context)
+        viewModelScope.launch { container.accountRepository.signOut() }
     }
 
     fun setSplitMode(mode: SplitMode) {

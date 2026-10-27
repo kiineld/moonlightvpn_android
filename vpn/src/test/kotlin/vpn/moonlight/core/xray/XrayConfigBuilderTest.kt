@@ -83,7 +83,7 @@ class XrayConfigBuilderTest {
         val tags = build().array("outbounds").map { (it as JsonObject).str("tag") }
         assertEquals(
             listOf(XrayConfigBuilder.PROXY_TAG, XrayConfigBuilder.DIRECT_TAG, XrayConfigBuilder.BLOCK_TAG),
-            tags,
+            tags.take(3),
         )
     }
 
@@ -119,7 +119,8 @@ class XrayConfigBuilderTest {
             ),
         ) as JsonObject
         val rules = config.obj("routing").array("rules")
-        assertEquals(1, rules.size)
+        // The two DNS rules and the catch-all.
+        assertEquals(3, rules.size)
     }
 
     @Test
@@ -132,6 +133,18 @@ class XrayConfigBuilderTest {
         ) as JsonObject
         val servers = config.obj("dns").array("servers").mapNotNull { (it as JsonPrimitive).contentOrNull }
         assertEquals(listOf("9.9.9.9"), servers)
+    }
+
+    @Test
+    fun `the user's dns wins over the defaults`() {
+        val config = json.parseToJsonElement(
+            XrayConfigBuilder.build(
+                coreOutput,
+                XrayConfigOptions(socksPort = 1080, dnsOverride = listOf("77.88.8.8")),
+            ),
+        ) as JsonObject
+        assertEquals(listOf("77.88.8.8"), config.obj("dns").array("servers").map { (it as JsonPrimitive).content })
+        assertEquals(XrayConfigBuilder.TUN_DNS, ((config.obj("routing").array("rules")[0] as JsonObject)["ip"] as JsonArray)[0].let { (it as JsonPrimitive).content })
     }
 
     @Test

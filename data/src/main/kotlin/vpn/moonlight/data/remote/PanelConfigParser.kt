@@ -32,8 +32,10 @@ object PanelConfigParser {
         val root = runCatching { json.parseToJsonElement(body) }.getOrNull()
         val configs = when (root) {
             is JsonArray -> root
-            // Some deployments wrap the array in an object.
-            is JsonObject -> root["configs"] as? JsonArray ?: return emptyList()
+            // Some deployments wrap the array in an object, and a host with a
+            // single raw XRAY JSON override can come back as that one config.
+            is JsonObject -> root["configs"] as? JsonArray
+                ?: if (root["outbounds"] is JsonArray) JsonArray(listOf(root)) else return emptyList()
             else -> return emptyList()
         }
 
